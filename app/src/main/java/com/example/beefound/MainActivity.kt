@@ -3,28 +3,41 @@ package com.example.beefound
 import android.app.Activity
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.fragment.app.FragmentActivity
+import androidx.navigation.Navigation.findNavController
 import com.example.beefound.databinding.ActivityHomeBinding
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 
 
-
-
-class MainActivity : Activity() {
-    lateinit var map: MapView
+class MainActivity : FragmentActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_home)
+    }
+
+}
+
+
+/*
+class MainActivity : FragmentActivity() {
+    lateinit var map: MapView
+
+    private val binding: ActivityHomeBinding? = null
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        var binding = ActivityHomeBinding.inflate(layoutInflater)
+        //setContentView(binding.getRoot())
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        //val navController = findNavController(this, R.id.nav_host_fragment_content_main)
 
         //handle permissions first, before map is created. not depicted here
 
@@ -49,10 +62,14 @@ class MainActivity : Activity() {
         val startPoint = GeoPoint(48.8583, 2.2944)        // change to user's location
         mapController.setCenter(startPoint)
 
-        addmarker(map , longitude = 0.001, latitude = 0.001, header = "title", snippet = "my text")
-        addmarker(map , longitude = 80.001, latitude = 80.001, header = "title", snippet = "my text")
+        //val customInfoWindow = CustomMarkerInfoWindow(R.layout.information_window, map, this)
+
+        addmarker(map , longitude = 40.001, latitude = 0.001, header = "title", snippet = "my text")
+        addmarker(map , longitude = 0.001, latitude = 40.001, header = "title", snippet = "my text")
 
     }
+
+
 
     public override fun onResume() {
         super.onResume()
@@ -75,10 +92,25 @@ class MainActivity : Activity() {
     fun addmarker(map: MapView, longitude: Double, latitude: Double, header: String, snippet: String) {
         val marker = Marker(map)
         marker.position = GeoPoint(longitude, latitude) // Set the position for the marker
-        marker.title = "Marker Title"
-        marker.snippet = "Marker Snippet"
+        //marker.isInfoWindowShown // Show the info window
+        //marker.title = "Marker Title"
+        //marker.snippet = "Marker Snippet"
         map.overlays?.add(marker)
         map.invalidate()
+
+        /*
+        marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
+            override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
+                marker.closeInfoWindow()
+                //val fragment = findViewById<View>(R.id.container_fragment)
+                //fragment.visibility = View.VISIBLE
+                val navController = findNavController(this@MainActivity, R.id.nav_graph)
+                navController.navigate(R.id.fragment_popup_content)
+                return true
+            }
+        })*/
     }
 
+
 }
+*/

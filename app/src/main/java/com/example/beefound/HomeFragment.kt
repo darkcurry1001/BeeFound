@@ -1,0 +1,189 @@
+package com.example.beefound
+
+import android.os.Bundle
+import android.preference.PreferenceManager
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.navigation.Navigation
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+
+// TODO: Rename parameter arguments, choose names that match
+// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+private const val ARG_PARAM1 = "param1"
+private const val ARG_PARAM2 = "param2"
+
+/**
+ * A simple [Fragment] subclass.
+ * Use the [HomeFragment.newInstance] factory method to
+ * create an instance of this fragment.
+ */
+class HomeFragment : Fragment() {
+    // TODO: Rename and change types of parameters
+    private var param1: String? = null
+    private var param2: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            param1 = it.getString(ARG_PARAM1)
+            param2 = it.getString(ARG_PARAM2)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        // get vars for all overlay elements
+        val popup = view.findViewById<View>(R.id.view_popup)
+        val img_bees = view.findViewById<ImageView>(R.id.img_bees)
+        val timestamp = view.findViewById<TextView>(R.id.txt_timestamp)
+        val status = view.findViewById<TextView>(R.id.txt_status)
+        val email = view.findViewById<TextView>(R.id.txt_email)
+        val btn_navigate = view.findViewById<Button>(R.id.btn_navigate)
+        val btn_collected = view.findViewById<Button>(R.id.btn_collected)
+        val btn_close = view.findViewById<Button>(R.id.btn_close)
+
+        val btn_maps = view.findViewById<Button>(R.id.btn_maps)
+        val compass = view.findViewById<View>(R.id.view_compass)
+        val btn_add = view.findViewById<Button>(R.id.btn_add_swarm)
+
+        // initially hide some overlay elements
+        popup.visibility = View.INVISIBLE
+        img_bees.visibility = View.INVISIBLE
+        timestamp.visibility = View.INVISIBLE
+        status.visibility = View.INVISIBLE
+        email.visibility = View.INVISIBLE
+        btn_navigate.visibility = View.INVISIBLE
+        btn_collected.visibility = View.INVISIBLE
+        btn_close.visibility = View.INVISIBLE
+
+        compass.visibility = View.INVISIBLE
+        btn_maps.visibility = View.INVISIBLE
+
+        // setup map
+        val ctx = activity?.applicationContext
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
+
+        val map = view.findViewById<MapView>(R.id.map)
+        map.setTileSource(TileSourceFactory.MAPNIK)
+        map.setMultiTouchControls(true)                                   // enable 2 finger zoom
+        map.setBuiltInZoomControls(false)                                 // disable zoom buttons
+
+        val mapController = map.controller
+        mapController.setZoom(14)                                           // set initial zoom level 14
+        val startPoint = GeoPoint(48.8583, 2.2944)        // change to user's location
+        mapController.setCenter(startPoint)
+
+        // add markers (random for now)
+        addmarker(view , longitude = 48.8583, latitude = 2.2944, header = "title", snippet = "my text")
+        addmarker(view , longitude = 2.2944, latitude = 48.8583, header = "title", snippet = "my text")
+
+        // onclick navigation button
+        btn_navigate.setOnClickListener {
+            btn_maps.visibility = View.VISIBLE
+            compass.visibility = View.VISIBLE
+        }
+
+        // onclick collected button
+        btn_collected.setOnClickListener {
+            TODO()
+        }
+
+        // onclick maps button (changes to other fragment for now)
+        btn_maps.setOnClickListener { Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_popupFragment) }
+
+        // onclick close button
+        btn_close.setOnClickListener {
+            popup.visibility = View.INVISIBLE
+            img_bees.visibility = View.INVISIBLE
+            timestamp.visibility = View.INVISIBLE
+            status.visibility = View.INVISIBLE
+            email.visibility = View.INVISIBLE
+            btn_navigate.visibility = View.INVISIBLE
+            btn_collected.visibility = View.INVISIBLE
+            btn_close.visibility = View.INVISIBLE
+            btn_add.visibility = View.VISIBLE
+        }
+
+        return view
+    }
+
+    // add new marker to map
+    fun addmarker(view: View, longitude: Double, latitude: Double, header: String, snippet: String) {
+        val map = view.findViewById<MapView>(R.id.map)
+        val marker = Marker(map)
+        marker.position = GeoPoint(latitude, longitude) // Set the position for the marker
+        //marker.isInfoWindowShown // Show the info window
+        //marker.title = "Marker Title"
+        //marker.snippet = "Marker Snippet"
+        map.overlays?.add(marker)
+        map.invalidate()
+
+        // onclick for marker
+        marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
+            override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
+                marker.closeInfoWindow()    // do not show the standard info window
+
+                // get vars for overlay elements
+                val popup = view.findViewById<View>(R.id.view_popup)
+                val img_bees = view.findViewById<ImageView>(R.id.img_bees)
+                val timestamp = view.findViewById<TextView>(R.id.txt_timestamp)
+                val status = view.findViewById<TextView>(R.id.txt_status)
+                val email = view.findViewById<TextView>(R.id.txt_email)
+                val btn_navigate = view.findViewById<Button>(R.id.btn_navigate)
+                val btn_collected = view.findViewById<Button>(R.id.btn_collected)
+                val btn_close = view.findViewById<Button>(R.id.btn_close)
+
+                val btn_add = view.findViewById<Button>(R.id.btn_add_swarm)
+
+                // display popup and hide add button
+                popup.visibility = View.VISIBLE
+                img_bees.visibility = View.VISIBLE
+                timestamp.visibility = View.VISIBLE
+                status.visibility = View.VISIBLE
+                email.visibility = View.VISIBLE
+                btn_navigate.visibility = View.VISIBLE
+                btn_collected.visibility = View.VISIBLE
+                btn_close.visibility = View.VISIBLE
+                btn_add.visibility = View.INVISIBLE
+
+                img_bees.setImageResource(R.drawable.bees)
+
+                return true
+            }
+        })
+    }
+
+    companion object {
+        /**
+         * Use this factory method to create a new instance of
+         * this fragment using the provided parameters.
+         *
+         * @param param1 Parameter 1.
+         * @param param2 Parameter 2.
+         * @return A new instance of fragment HomeFragment.
+         */
+        // TODO: Rename and change types and number of parameters
+        @JvmStatic
+        fun newInstance(param1: String, param2: String) =
+            HomeFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM1, param1)
+                    putString(ARG_PARAM2, param2)
+                }
+            }
+    }
+}
