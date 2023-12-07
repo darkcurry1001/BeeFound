@@ -1,20 +1,38 @@
 package com.example.beefound
 
+import android.Manifest
+import android.app.Activity
+import android.content.ContentValues
+import android.content.ContentValues.TAG
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.content.FileProvider
+import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -32,6 +50,8 @@ class HomeFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private val CAMERA_REQUEST_CODE = 4711
+    private var someActivityResultLauncher: ActivityResultLauncher<Intent>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +70,9 @@ class HomeFragment : Fragment() {
 
         // set timestamp format
         val sdf = SimpleDateFormat("'Date                Time\n'dd-MM-yyyy    HH:mm:ss z")
+
+        // set activity launcher for camera
+        setActivityLauncher(view = view)
 
         // get vars for all overlay elements
         val popup = view.findViewById<View>(R.id.view_popup)
@@ -107,7 +130,24 @@ class HomeFragment : Fragment() {
             TODO()
         }
 
+        // onclick add swarm button
         btn_add.setOnClickListener {
+            // Camera permissions and take photo
+            if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                Log.d(ContentValues.TAG, "Camera permission granted")
+                takePhoto()
+            } else {
+                requestPermissions(arrayOf<String>(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
+                Log.d(ContentValues.TAG, "Camera permission requested")
+                Toast.makeText(requireContext(), "Camera permission needed", Toast.LENGTH_SHORT).show()
+                // check if permission was granted and take picture (does not work yet)
+                if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(ContentValues.TAG, "Camera permission granted")
+                    takePhoto()
+                }
+            }
+
+
             // set timestamp for marker
             val currentDateAndTime = sdf.format(Date())
 
@@ -192,6 +232,46 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
+    fun takePhoto() {
+        Log.d(TAG, "Use system camera to take photo")
+        // use Intent to access camera
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            // new for FileProvider
+            val imageFile: File? = (activity as MainActivity?)?.createPhotoFile()
+            var photoURI: Uri? = null
+            if (imageFile != null) {
+                photoURI = FileProvider.getUriForFile(
+                    requireActivity(),
+                    "com.example.beefound.fileprovider",
+                    imageFile)
+            }
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            someActivityResultLauncher?.launch(takePictureIntent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun setActivityLauncher(view: View) {
+        someActivityResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult(),
+
+                fun(result: ActivityResult) {
+                    if (result.resultCode == Activity.RESULT_OK) {
+                        Log.d(TAG, "Photo has been taken")
+                        // new file provider code
+                        val imgFile: File? = (activity as MainActivity?)?.getImageFile()
+                        Log.d(TAG, "activityResult (path): $imgFile")
+                        if (imgFile?.exists() == true) {
+                            val myBitmap = BitmapFactory.decodeFile(imgFile.absolutePath)
+                            view.findViewById<ImageView>(R.id.img_bees).setImageBitmap(myBitmap)
+                        }
+                    }
+                })
+    }
+
 
     companion object {
         /**

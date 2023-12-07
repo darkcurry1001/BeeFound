@@ -75,11 +75,18 @@ dependencies {
     val appcompat_version = "1.6.1"
 
     implementation("androidx.appcompat:appcompat:$appcompat_version")
-    // For loading and tinting drawables on older versions of the platform
     implementation("androidx.appcompat:appcompat-resources:$appcompat_version")
 
     implementation("androidx.fragment:fragment-ktx:1.6.2") // or the latest version available
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.5") // or the latest version available
     implementation("androidx.navigation:navigation-ui-ktx:2.7.5") // or the latest version available
+
+    val camerax_version = "1.3.0"
+    implementation ("androidx.camera:camera-core:${camerax_version}")
+    implementation ("androidx.camera:camera-camera2:${camerax_version}")
+    implementation ("androidx.camera:camera-lifecycle:${camerax_version}")
+    implementation ("androidx.camera:camera-video:${camerax_version}")
+    implementation ("androidx.camera:camera-view:${camerax_version}")
+    implementation ("androidx.camera:camera-extensions:${camerax_version}")
 
 }
