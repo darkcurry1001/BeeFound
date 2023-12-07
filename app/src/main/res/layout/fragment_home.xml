@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeFragment"
+    android:background="@color/teal_200">
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="153dp"
+        tools:layout_editor_absoluteY="264dp">
+
+    </org.osmdroid.views.MapView>
+
+    <Button
+        android:id="@+id/btn_add_swarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
+        android:text="Add Swarm"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/btn_shape_bee_yellow" />
+
+    <View
+        android:id="@+id/view_popup"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:background="@color/yellow_bee"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/img_bees"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        app:layout_constraintStart_toStartOf="@+id/view_popup"
+        app:layout_constraintTop_toBottomOf="@+id/btn_close"
+        tools:src="@drawable/bees"
+        tools:visibility="invisible"/>
+
+    <TextView
+        android:id="@+id/txt_timestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:text="Timestamp"
+        app:layout_constraintStart_toEndOf="@+id/img_bees"
+        app:layout_constraintTop_toBottomOf="@+id/btn_close"
+        tools:visibility="invisible"/>
+
+    <TextView
+        android:id="@+id/txt_status"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Status"
+        android:maxEms="25"
+        android:singleLine="false"
+        android:scrollHorizontally="false"
+        android:ellipsize="end"
+        android:breakStrategy="balanced"
+        android:hyphenationFrequency="normal"
+        app:layout_constraintStart_toStartOf="@+id/txt_timestamp"
+        app:layout_constraintTop_toTopOf="@+id/txt_timestamp"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:id="@+id/txt_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Email"
+        app:layout_constraintStart_toStartOf="@+id/txt_status"
+        app:layout_constraintTop_toTopOf="@+id/txt_status"
+        android:visibility="invisible"/>
+
+    <Button
+        android:id="@+id/btn_navigate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="navigate"
+        app:layout_constraintStart_toStartOf="@+id/txt_email"
+        app:layout_constraintTop_toTopOf="@+id/txt_email"
+        android:visibility="invisible"/>
+
+    <Button
+        android:id="@+id/btn_collected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="collected"
+        app:layout_constraintStart_toStartOf="@+id/btn_navigate"
+        app:layout_constraintTop_toTopOf="@+id/btn_navigate"
+        android:visibility="invisible"/>
+
+    <Button
+        android:id="@+id/btn_close"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:text="-"
+        app:layout_constraintEnd_toEndOf="@+id/view_popup"
+        app:layout_constraintTop_toTopOf="@+id/view_popup"
+        android:background="@drawable/btn_shape_close"
+        android:visibility="invisible"/>
+
+    <Button
+        android:id="@+id/btn_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Menu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/btn_shape_bee_yellow" />
+
+    <View
+        android:id="@+id/view_compass"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@color/purple_500"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_maps"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="maps"
+        app:layout_constraintTop_toBottomOf="@+id/view_compass"
+        app:layout_constraintRight_toRightOf="@+id/view_compass"
+        android:background="@drawable/btn_shape_bee_yellow" />
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

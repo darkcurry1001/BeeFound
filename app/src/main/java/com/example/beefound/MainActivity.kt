@@ -1,30 +1,70 @@
 package com.example.beefound
 
-import android.app.Activity
+import android.Manifest
+import android.content.ContentValues
+import android.content.ContentValues.TAG
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
-import com.example.beefound.databinding.ActivityHomeBinding
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import android.os.Environment
+import android.util.Log
+import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
+import java.io.File
 
 
+class MainActivity : FragmentActivity() {
+    private val IMAGE_FILE_NAME: String = "test.jpg"
 
+    private val CAMERA_REQUEST_CODE = 4711
 
-
-class MainActivity : Activity() {
-    lateinit var map: MapView
+    private var photoFile: File = File("drawable/bees.jpg")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_home)
+    }
+
+    fun createPhotoFile(): File? {
+        // check if external media is available
+        if (Environment.MEDIA_MOUNTED != Environment.getExternalStorageState()) {
+            Log.d(TAG, "Not mounted")
+            return null
+        }
+        val fileDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        Log.d(TAG, "Directory: $fileDir")
+        if (!fileDir!!.exists()) {
+            Log.d(TAG, "Path did not exist")
+            if (!fileDir.mkdirs()) {
+                Log.d(TAG, "Something wrong with directory: $fileDir")
+            }
+        }
+        // Create file
+        val imageFile = File("$fileDir/$IMAGE_FILE_NAME")
+        Log.d(TAG, "Dir: $imageFile")
+        photoFile = imageFile
+        return imageFile
+    }
+
+    fun getImageFile(): File? {
+        return photoFile
+    }
+
+}
+
+
+/*
+class MainActivity : FragmentActivity() {
+    lateinit var map: MapView
+
+    private val binding: ActivityHomeBinding? = null
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        var binding = ActivityHomeBinding.inflate(layoutInflater)
+        //setContentView(binding.getRoot())
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        //val navController = findNavController(this, R.id.nav_host_fragment_content_main)
 
         //handle permissions first, before map is created. not depicted here
 
@@ -49,13 +89,23 @@ class MainActivity : Activity() {
         val startPoint = GeoPoint(48.8583, 2.2944)        // change to user's location
         mapController.setCenter(startPoint)
 
-        addmarker(map , longitude = 0.001, latitude = 0.001, header = "title", snippet = "my text")
-        addmarker(map , longitude = 80.001, latitude = 80.001, header = "title", snippet = "my text")
+        //val customInfoWindow = CustomMarkerInfoWindow(R.layout.information_window, map, this)
+
+        addmarker(map , longitude = 40.001, latitude = 0.001, header = "title", snippet = "my text")
+        addmarker(map , longitude = 0.001, latitude = 40.001, header = "title", snippet = "my text")
 
     }
 
+
+
     public override fun onResume() {
         super.onResume()
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(ContentValues.TAG, "Camera permission granted")
+        } else {
+            requestPermissions(arrayOf<String>(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
+            Log.d(ContentValues.TAG, "Camera permission requested")
+        }
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -75,10 +125,25 @@ class MainActivity : Activity() {
     fun addmarker(map: MapView, longitude: Double, latitude: Double, header: String, snippet: String) {
         val marker = Marker(map)
         marker.position = GeoPoint(longitude, latitude) // Set the position for the marker
-        marker.title = "Marker Title"
-        marker.snippet = "Marker Snippet"
+        //marker.isInfoWindowShown // Show the info window
+        //marker.title = "Marker Title"
+        //marker.snippet = "Marker Snippet"
         map.overlays?.add(marker)
         map.invalidate()
+
+        /*
+        marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
+            override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
+                marker.closeInfoWindow()
+                //val fragment = findViewById<View>(R.id.container_fragment)
+                //fragment.visibility = View.VISIBLE
+                val navController = findNavController(this@MainActivity, R.id.nav_graph)
+                navController.navigate(R.id.fragment_popup_content)
+                return true
+            }
+        })*/
     }
 
+
 }
+*/
