@@ -15,6 +15,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import java.text.SimpleDateFormat
+import java.util.Date
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,6 +47,9 @@ class HomeFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        // set timestamp format
+        val sdf = SimpleDateFormat("'Date                Time\n'dd-MM-yyyy    HH:mm:ss z")
 
         // get vars for all overlay elements
         val popup = view.findViewById<View>(R.id.view_popup)
@@ -88,8 +93,8 @@ class HomeFragment : Fragment() {
         mapController.setCenter(startPoint)
 
         // add markers (random for now)
-        addmarker(view , longitude = 48.8583, latitude = 2.2944, header = "title", snippet = "my text")
-        addmarker(view , longitude = 2.2944, latitude = 48.8583, header = "title", snippet = "my text")
+        addmarker(view , longitude = 48.8583, latitude = 2.2944, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
+        addmarker(view , longitude = 2.2944, latitude = 48.8583, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
 
         // onclick navigation button
         btn_navigate.setOnClickListener {
@@ -102,6 +107,13 @@ class HomeFragment : Fragment() {
             TODO()
         }
 
+        btn_add.setOnClickListener {
+            // set timestamp for marker
+            val currentDateAndTime = sdf.format(Date())
+
+            addmarker(view , longitude = 2.5, latitude = 50.0, header = "", snippet = "", time = currentDateAndTime, user_email = "max.mustermann_der_neue@gmail.com")
+
+        }
         // onclick maps button (changes to other fragment for now)
         btn_maps.setOnClickListener { Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_popupFragment) }
 
@@ -122,7 +134,7 @@ class HomeFragment : Fragment() {
     }
 
     // add new marker to map
-    fun addmarker(view: View, longitude: Double, latitude: Double, header: String, snippet: String) {
+    fun addmarker(view: View, longitude: Double, latitude: Double, header: String, snippet: String, time: String, user_email: String) {
         val map = view.findViewById<MapView>(R.id.map)
         val marker = Marker(map)
         marker.position = GeoPoint(latitude, longitude) // Set the position for the marker
@@ -160,7 +172,21 @@ class HomeFragment : Fragment() {
                 btn_close.visibility = View.VISIBLE
                 btn_add.visibility = View.INVISIBLE
 
+                // set picture according to clicked marker
                 img_bees.setImageResource(R.drawable.bees)
+
+                // set timestamp and initial status
+                timestamp.text = time
+                status.text = "Ready to be collected"
+
+                // add email, break at @ if too long
+                if (user_email.length > 30) {
+                    val email1 = user_email.substring(0, user_email.indexOf("@"))
+                    val email2 = user_email.substring(user_email.indexOf("@"))
+                    val user_email_split = email1 + "\n" + email2
+                    email.text = user_email_split
+                } else
+                email.text = user_email
 
                 return true
             }
