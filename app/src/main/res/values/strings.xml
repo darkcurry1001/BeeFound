@@ -2,4 +2,16 @@
     <string name="app_name">BeeFound</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_description">A community effort to guide lost swarms back to their keepers</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="log_in">Log In</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="regular_user">Regular User</string>
+    <string name="beekeeper">Beekeeper</string>
+    <string name="email_address_optional">Email Address (optional)</string>
+    <string name="phone_number_optional">Phone Number (optional)</string>
+    <string name="log_in_underlined"><u>Log In</u></string>
+    <string name="sign_up_underlined"><u>Sign Up</u></string>
 </resources>

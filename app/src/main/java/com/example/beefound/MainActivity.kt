@@ -3,10 +3,13 @@ package com.example.beefound
 import android.Manifest
 import android.content.ContentValues
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import java.io.File
@@ -22,6 +25,9 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
     }
+
+
+
 
     fun createPhotoFile(): File? {
         // check if external media is available
@@ -47,6 +53,8 @@ class MainActivity : FragmentActivity() {
     fun getImageFile(): File? {
         return photoFile
     }
+
+
 
 }
 
