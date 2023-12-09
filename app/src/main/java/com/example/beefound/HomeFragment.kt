@@ -53,6 +53,7 @@ class HomeFragment : Fragment() {
     private val CAMERA_REQUEST_CODE = 4711
     private var someActivityResultLauncher: ActivityResultLauncher<Intent>? = null
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -87,6 +88,7 @@ class HomeFragment : Fragment() {
         val btn_maps = view.findViewById<Button>(R.id.btn_maps)
         val compass = view.findViewById<View>(R.id.view_compass)
         val btn_add = view.findViewById<Button>(R.id.btn_add_swarm)
+        val btn_menu = view.findViewById<Button>(R.id.btn_menu)
 
         // initially hide some overlay elements
         popup.visibility = View.INVISIBLE
@@ -128,6 +130,12 @@ class HomeFragment : Fragment() {
         // onclick collected button
         btn_collected.setOnClickListener {
             TODO()
+        }
+
+
+        btn_menu.setOnClickListener {
+            val intent = Intent(requireContext(), StartActivity::class.java)
+            startActivity(intent)
         }
 
         // onclick add swarm button
