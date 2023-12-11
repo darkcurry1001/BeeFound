@@ -11,8 +11,10 @@ import android.graphics.BitmapFactory
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
+import android.os.Looper
 import android.preference.PreferenceManager
 import android.provider.MediaStore
 import android.util.Log
@@ -42,7 +44,12 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import java.util.concurrent.TimeUnit
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -64,6 +71,8 @@ class HomeFragment : Fragment() {
 
     private val LOCATION_PERMISSION_REQ_CODE = 1000;
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    var locationRequest: LocationRequest? = null
+
 
     private val permissionId = 2
     var swarms = mutableListOf<Marker>()
@@ -95,6 +104,30 @@ class HomeFragment : Fragment() {
 
         // get location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        locationRequest = LocationRequest.create()
+        locationRequest?.interval = TimeUnit.SECONDS.toMillis(60)
+        locationRequest?.fastestInterval = TimeUnit.SECONDS.toMillis(30)
+        locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        var locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+                for (location in locationResult.locations){
+                    latitude_glob = location.latitude
+                    longitude_glob = location.longitude
+                    Log.d(TAG, "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+                }
+            }
+        }
+        if (ActivityCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // request permission
+            ActivityCompat.requestPermissions(requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE);
+
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+
 
         // get vars for all overlay elements
         val popup = view.findViewById<View>(R.id.view_popup)
@@ -142,8 +175,8 @@ class HomeFragment : Fragment() {
         map.setBuiltInZoomControls(false)                                 // disable zoom buttons
 
         val mapController = map.controller
-        mapController.setZoom(14)                                           // set initial zoom level 14
-        val startPoint = GeoPoint(48.8583, 2.2944)        // change to user's location
+        mapController.setZoom(10)                                           // set initial zoom level 14
+        val startPoint = GeoPoint(48.30639, 14.28611)        // change to user's location
         mapController.setCenter(startPoint)
 
         // add markers (random for now)
@@ -171,8 +204,10 @@ class HomeFragment : Fragment() {
 
         // onclick add swarm button
         btn_add.setOnClickListener {
-            getCurrentLocation()
+            //getCurrentLocation()
             // Camera permissions and take photo
+
+            /*
             if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 Log.d(ContentValues.TAG, "Camera permission granted")
                 takePhoto()
@@ -186,12 +221,14 @@ class HomeFragment : Fragment() {
                     takePhoto()
                 }
             }
+            */
+
 
 
             // set timestamp for marker
             val currentDateAndTime = sdf.format(Date())
 
-            addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = currentDateAndTime, user_email = "max.mustermann_der_neue@gmail.com")
+            addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
         }
         // onclick maps button (changes to other fragment for now)
@@ -258,16 +295,26 @@ class HomeFragment : Fragment() {
 
                 // set timestamp and initial status
                 timestamp.text = time
-                status.text = "Ready to be collected"
+                status.text = "Ready to be collected!"
 
                 // add email, break at @ if too long
                 if (user_email.length > 30) {
                     val email1 = user_email.substring(0, user_email.indexOf("@"))
                     val email2 = user_email.substring(user_email.indexOf("@"))
                     val user_email_split = email1 + "\n" + email2
-                    email.text = user_email_split
-                } else
-                email.text = user_email
+                    email.text = "Found by $user_email_split"
+                } else{
+                email.text = "Found by ${user_email}"}
+
+                // onclick for collected button
+                btn_collected.setOnClickListener {
+                    status.text = "Collected  by ${user_email}at ${SimpleDateFormat("HH:mm:ss").format(Date())}"
+                    btn_collected.visibility = View.INVISIBLE
+                    btn_navigate.visibility = View.INVISIBLE
+
+                    marker.icon = resources.getDrawable(R.drawable.marker_collected, null)
+                    map.invalidate()
+                }
 
                 return true
             }
