@@ -4,9 +4,13 @@ import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -24,6 +28,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
@@ -103,6 +108,14 @@ class HomeFragment : Fragment() {
         compass.visibility = View.INVISIBLE
         btn_maps.visibility = View.INVISIBLE
 
+        // access rotation vector and series
+        val sensor = (activity as? MainActivity)?.sensor
+        val sensorManager = (activity as? MainActivity)?.sensorManager
+
+        val main = requireContext() as MainActivity
+        sensorManager?.registerListener(main, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        Log.d(TAG, "sensor: $sensor")
+
         // setup map
         val ctx = activity?.applicationContext
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
@@ -125,6 +138,8 @@ class HomeFragment : Fragment() {
         btn_navigate.setOnClickListener {
             btn_maps.visibility = View.VISIBLE
             compass.visibility = View.VISIBLE
+
+
         }
 
         // onclick collected button
@@ -279,7 +294,6 @@ class HomeFragment : Fragment() {
                     }
                 })
     }
-
 
     companion object {
         /**

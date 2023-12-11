@@ -40,6 +40,7 @@
         android:id="@+id/img_bees"
         android:layout_width="130dp"
         android:layout_height="130dp"
+        android:layout_marginStart="10dp"
         app:layout_constraintStart_toStartOf="@+id/view_popup"
         app:layout_constraintTop_toBottomOf="@+id/btn_close"
         tools:src="@drawable/bees"
@@ -86,10 +87,11 @@
         android:id="@+id/btn_navigate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="50dp"
         android:text="navigate"
         app:layout_constraintStart_toStartOf="@+id/txt_email"
         app:layout_constraintTop_toTopOf="@+id/txt_email"
+        android:backgroundTint="@color/white"
         android:background="@drawable/button_rounded_corners"
         android:visibility="invisible"/>
 
@@ -97,10 +99,11 @@
         android:id="@+id/btn_collected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginStart="30dp"
         android:text="collected"
-        app:layout_constraintStart_toStartOf="@+id/btn_navigate"
+        app:layout_constraintStart_toEndOf="@+id/btn_navigate"
         app:layout_constraintTop_toTopOf="@+id/btn_navigate"
+        android:backgroundTint="@color/white"
         android:background="@drawable/button_rounded_corners"
         android:visibility="invisible"/>
 
