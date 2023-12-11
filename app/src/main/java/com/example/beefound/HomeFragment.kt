@@ -27,6 +27,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
@@ -40,6 +41,8 @@ import org.osmdroid.views.overlay.Marker
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -55,8 +58,18 @@ class HomeFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+
     private val CAMERA_REQUEST_CODE = 4711
     private var someActivityResultLauncher: ActivityResultLauncher<Intent>? = null
+
+    private val LOCATION_PERMISSION_REQ_CODE = 1000;
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private val permissionId = 2
+    var swarms = mutableListOf<Marker>()
+
+    var latitude_glob: Double = 48.30639
+    var longitude_glob: Double = 14.28611
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,6 +92,9 @@ class HomeFragment : Fragment() {
 
         // set activity launcher for camera
         setActivityLauncher(view = view)
+
+        // get location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         // get vars for all overlay elements
         val popup = view.findViewById<View>(R.id.view_popup)
@@ -155,6 +171,7 @@ class HomeFragment : Fragment() {
 
         // onclick add swarm button
         btn_add.setOnClickListener {
+            getCurrentLocation()
             // Camera permissions and take photo
             if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 Log.d(ContentValues.TAG, "Camera permission granted")
@@ -174,7 +191,7 @@ class HomeFragment : Fragment() {
             // set timestamp for marker
             val currentDateAndTime = sdf.format(Date())
 
-            addmarker(view , longitude = 2.5, latitude = 50.0, header = "", snippet = "", time = currentDateAndTime, user_email = "max.mustermann_der_neue@gmail.com")
+            addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = currentDateAndTime, user_email = "max.mustermann_der_neue@gmail.com")
 
         }
         // onclick maps button (changes to other fragment for now)
@@ -206,6 +223,7 @@ class HomeFragment : Fragment() {
         //marker.snippet = "Marker Snippet"
         map.overlays?.add(marker)
         map.invalidate()
+        swarms.add(marker)
 
         // onclick for marker
         marker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
@@ -293,6 +311,32 @@ class HomeFragment : Fragment() {
                         }
                     }
                 })
+    }
+
+    fun getCurrentLocation() {
+        // checking location permission
+        if (ActivityCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // request permission
+            ActivityCompat.requestPermissions(requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE);
+            return
+        }
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location ->
+                // getting the last known or current location
+                latitude_glob = location.latitude
+                longitude_glob = location.longitude
+
+                Log.d(TAG, "Latitude: $latitude_glob, Longitude: $longitude_glob, swarm $swarms")
+                Toast.makeText(requireContext(), "Latitude: $latitude_glob, Longitude: $longitude_glob",
+                    Toast.LENGTH_SHORT).show()
+
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed on getting current location",
+                    Toast.LENGTH_SHORT).show()
+            }
     }
 
     companion object {

@@ -10,13 +10,12 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
+import org.osmdroid.views.overlay.Marker
 import java.io.File
 
 
 class MainActivity : FragmentActivity(), SensorEventListener  {
     private val IMAGE_FILE_NAME: String = "test.jpg"
-
-    private val CAMERA_REQUEST_CODE = 4711
 
     private var photoFile: File = File("drawable/bees.jpg")
 

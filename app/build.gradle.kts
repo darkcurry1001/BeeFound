@@ -88,4 +88,6 @@ dependencies {
     implementation ("androidx.camera:camera-video:${camerax_version}")
     implementation ("androidx.camera:camera-view:${camerax_version}")
     implementation ("androidx.camera:camera-extensions:${camerax_version}")
+
+    implementation("com.google.android.gms:play-services-location:18.0.0")
 }
