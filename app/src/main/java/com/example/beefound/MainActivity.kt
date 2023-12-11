@@ -1,33 +1,35 @@
 package com.example.beefound
 
-import android.Manifest
-import android.content.ContentValues
 import android.content.ContentValues.TAG
-import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
+import org.osmdroid.views.overlay.Marker
 import java.io.File
 
 
-class MainActivity : FragmentActivity() {
+class MainActivity : FragmentActivity(), SensorEventListener  {
     private val IMAGE_FILE_NAME: String = "test.jpg"
 
-    private val CAMERA_REQUEST_CODE = 4711
-
     private var photoFile: File = File("drawable/bees.jpg")
+
+    var sensor: Sensor? = null
+    var sensorManager: SensorManager? = null
+
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
     }
-
-
-
 
     fun createPhotoFile(): File? {
         // check if external media is available
@@ -54,6 +56,18 @@ class MainActivity : FragmentActivity() {
         return photoFile
     }
 
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+            Log.d(
+                TAG,
+                "Rotation vector: ${event.values[0]}, ${event.values[1]}, ${event.values[2]}"
+            )
+        }
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+        Log.d(TAG, "Accuracy changed: $p0, $p1")
+    }
 
 
 }
