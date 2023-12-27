@@ -14,7 +14,7 @@ import org.osmdroid.views.overlay.Marker
 import java.io.File
 
 
-class MainActivity : FragmentActivity(), SensorEventListener  {
+class MainActivity : FragmentActivity()  {
     private val IMAGE_FILE_NAME: String = "test.jpg"
 
     private var photoFile: File = File("drawable/bees.jpg")
@@ -27,8 +27,6 @@ class MainActivity : FragmentActivity(), SensorEventListener  {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
     }
 
     fun createPhotoFile(): File? {
@@ -56,18 +54,7 @@ class MainActivity : FragmentActivity(), SensorEventListener  {
         return photoFile
     }
 
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
-            Log.d(
-                TAG,
-                "Rotation vector: ${event.values[0]}, ${event.values[1]}, ${event.values[2]}"
-            )
-        }
-    }
 
-    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        Log.d(TAG, "Accuracy changed: $p0, $p1")
-    }
 
 
 }
