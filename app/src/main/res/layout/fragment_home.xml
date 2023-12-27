@@ -130,7 +130,7 @@
         android:id="@+id/image_compass"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:src="@drawable/compass"
+        android:src="@drawable/bee_compass"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/map" />
 
