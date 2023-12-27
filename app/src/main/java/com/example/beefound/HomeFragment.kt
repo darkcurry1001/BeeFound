@@ -29,6 +29,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
@@ -224,14 +225,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
         addlostpoly(view, at = GeoPoint(latitude_glob, longitude_glob) , radius = 1000.0) // add lost swarms (random for now)
 
 
-
-        // onclick collected button
-        /*
-        btn_collected.setOnClickListener {
-            TODO()
-        }*/
-
-
         btn_menu.setOnClickListener {
             val intent = Intent(requireContext(), StartActivity::class.java)
             startActivity(intent)
@@ -262,8 +255,10 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
             // set timestamp for marker
             val currentDateAndTime = sdf.format(Date())
+            Log.d(TAG, "marker")
+            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
-            addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+            //addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
         }
         // onclick maps button (changes to other fragment for now)
@@ -489,6 +484,28 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
         })
     }
+
+    fun markerConfirmation(view: View, longitude: Double, latitude: Double, header: String, snippet: String, time: String, user_email: String) {
+        val sdf = SimpleDateFormat("'Date                Time\n'dd-MM-yyyy    HH:mm:ss z")
+
+        Log.d(TAG, "conformation")
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        builder
+            .setTitle("Confirm")
+            .setMessage("Do you want to add a new swarm?")
+            .setPositiveButton("Yes") { dialog, which ->
+                // add marker
+                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+            }
+            .setNegativeButton("No") { dialog, which ->
+                // Do not add marker
+            }
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+    }
+
 
     fun takePhoto() {
         Log.d(TAG, "Use system camera to take photo")
