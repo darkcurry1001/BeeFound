@@ -46,6 +46,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
 import java.io.File
 import java.lang.Math.asin
 import java.lang.Math.atan2
@@ -219,6 +220,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
         //addmarker(view , longitude = 2.2944, latitude = 48.8583, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
         addmarker(view , longitude = 2.28611, latitude = 30.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
         addmarker(view , longitude = 22.28611, latitude = 48.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
+
+        addlostpoly(view, at = GeoPoint(latitude_glob, longitude_glob) , radius = 1000.0) // add lost swarms (random for now)
 
 
 
@@ -506,6 +509,36 @@ class HomeFragment : Fragment(), SensorEventListener  {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun addlostpoly(view: View, at: GeoPoint, radius: Double) {
+        /*
+        view ... map view from fragment_home.xml to add the polygon to
+        at ... GeoPoint of location of the center of the circle
+        radius ... radius of the circle in meters
+        */
+
+        val map = view.findViewById<MapView>(R.id.map)
+        val circle = Polygon()
+        circle.setFillColor(0x3000FF00)             // Fill color (semi-transparent green)
+        circle.setStrokeColor(0xFF00FF00.toInt())   // Stroke color (green)
+        circle.setStrokeWidth(2F)                   // Stroke width
+
+        val numberOfPoints = 100 // Number of points to create a smooth circle
+
+        // calculate points for the circle
+        for (i in 0 until numberOfPoints) {
+            val angle = Math.PI * 2 * i / numberOfPoints
+            val x: Double = at.latitude + radius / 111000.0 * cos(angle)
+            val y: Double = at.longitude + radius / (111000.0 * cos(Math.toRadians(at.latitude))) * sin(angle)
+            circle.addPoint(GeoPoint(x, y))
+        }
+
+        // Add the circle Polygon to the map
+        map.overlays?.add(circle);
+
+        // Refresh the map to display the circle
+        map.invalidate()
     }
 
     private fun setActivityLauncher(view: View) {
