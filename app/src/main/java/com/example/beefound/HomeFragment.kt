@@ -255,10 +255,9 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
             // set timestamp for marker
             val currentDateAndTime = sdf.format(Date())
-            Log.d(TAG, "marker")
-            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
-            //addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+            // open confirmation to add marker
+            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
         }
         // onclick maps button (changes to other fragment for now)
