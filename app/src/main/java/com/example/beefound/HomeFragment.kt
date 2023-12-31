@@ -3,7 +3,6 @@ package com.example.beefound
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
@@ -30,13 +29,9 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.compose.ui.text.intl.Locale
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -49,7 +44,6 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
 import java.io.File
-import java.lang.Math.asin
 import java.lang.Math.atan2
 import java.lang.Math.cos
 import java.lang.Math.sin
@@ -124,7 +118,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
         // set timestamp format
-        val sdf = SimpleDateFormat("'Date                Time\n'dd-MM-yyyy    HH:mm:ss z")
+        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
 
         // set activity launcher for camera
         setActivityLauncher(view = view)
@@ -358,6 +352,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         //marker.isInfoWindowShown // Show the info window
         //marker.title = "Marker Title"
         marker.snippet = "Ready to be collected!"
+        marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
         map.overlays?.add(marker)
         map.invalidate()
         swarms.add(marker)
@@ -396,13 +391,13 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 img_bees.setImageResource(R.drawable.bees)
 
                 // add email, break at @ if too long
-                if (user_email.length > 30) {
+                if (user_email.length > 200) {
                     val email1 = user_email.substring(0, user_email.indexOf("@"))
                     val email2 = user_email.substring(user_email.indexOf("@"))
                     val user_email_split = email1 + "\n" + email2
-                    email.text = "Found by $user_email_split"
+                    email.text = "Found by: \n $user_email_split"
                 } else {
-                    email.text = "Found by ${user_email}"
+                    email.text = "Found by: \n ${user_email}"
                 }
                 if (marker.snippet == "Ready to be collected!") {
                     btn_navigate.visibility = View.VISIBLE
@@ -439,9 +434,9 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     btn_navigate.setOnClickListener {
                         status.text = "Beekeeper on the way!"
                         btn_navigate.visibility = View.INVISIBLE
-                        marker.icon = resources.getDrawable(R.drawable.marker_collected, null)
+                        marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
                         map.invalidate()
-                        marker.snippet = "Beekkeeper on the way!"
+                        marker.snippet = "Beekeeper on the way!"
 
                         btn_maps.visibility = View.VISIBLE
                         compass.visibility = View.VISIBLE
@@ -466,7 +461,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     }
 
                     return true
-                }else if (marker.snippet == "Beekkeeper on the way!"){
+                }else if (marker.snippet == "Beekeeper on the way!"){
                     btn_navigate.visibility = View.INVISIBLE
                     btn_collected.visibility = View.INVISIBLE
 
@@ -485,7 +480,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
     }
 
     fun markerConfirmation(view: View, longitude: Double, latitude: Double, header: String, snippet: String, time: String, user_email: String) {
-        val sdf = SimpleDateFormat("'Date                Time\n'dd-MM-yyyy    HH:mm:ss z")
+        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
 
         Log.d(TAG, "conformation")
 
@@ -495,7 +490,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             .setMessage("Do you want to add a new swarm?")
             .setPositiveButton("Yes") { dialog, which ->
                 // add marker
-                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "coroian.petruta.simina_even_longer@gmail.com")
             }
             .setNegativeButton("No") { dialog, which ->
                 // Do not add marker
