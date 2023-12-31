@@ -37,6 +37,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.navigation.NavigationView
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -141,6 +142,26 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
         }
 
+        // set up menu
+        val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
+        menu_view.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_hives -> {
+                    val intent = Intent(requireContext(), SignUp::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(requireContext(), SignUp::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_logout -> {
+                    val intent = Intent(requireContext(), LogIn::class.java)
+                    startActivity(intent)
+                }
+            }
+            menu_view.visibility = View.INVISIBLE
+            true
+        }
 
 
 
@@ -220,8 +241,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
 
         btn_menu.setOnClickListener {
-            val intent = Intent(requireContext(), StartActivity::class.java)
-            startActivity(intent)
+            menu_view.visibility = View.VISIBLE
         }
 
         // onclick add swarm button
