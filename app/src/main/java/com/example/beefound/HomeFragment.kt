@@ -399,81 +399,83 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 } else {
                     email.text = "Found by: \n ${user_email}"
                 }
-                if (marker.snippet == "Ready to be collected!") {
-                    btn_navigate.visibility = View.VISIBLE
-                    btn_collected.visibility = View.VISIBLE
+                when (marker.snippet) {
+                    "Ready to be collected!" -> {
+                        btn_navigate.visibility = View.VISIBLE
+                        btn_collected.visibility = View.VISIBLE
 
-                    // set timestamp and initial status
-                    timestamp.text = time
-                    status.text = "Ready to be collected!"
+                        // set timestamp and initial status
+                        timestamp.text = time
+                        status.text = marker.snippet
 
-                    // onclick for collected button
-                    btn_collected.setOnClickListener {
-                        status.text = "Collected!"
-                        btn_collected.visibility = View.INVISIBLE
-                        btn_navigate.visibility = View.INVISIBLE
+                        // onclick for collected button
+                        btn_collected.setOnClickListener {
+                            status.text = "Collected!"
+                            btn_collected.visibility = View.INVISIBLE
+                            btn_navigate.visibility = View.INVISIBLE
 
-                        btn_maps.visibility = View.INVISIBLE
-                        compass.visibility = View.INVISIBLE
-                        popup.visibility = View.INVISIBLE
-                        img_bees.visibility = View.INVISIBLE
-                        timestamp.visibility = View.INVISIBLE
-                        status.visibility = View.INVISIBLE
-                        email.visibility = View.INVISIBLE
-                        btn_close.visibility = View.INVISIBLE
-                        btn_add.visibility = View.VISIBLE
-
-
-
-                        //marker.snippet = "Collected!"
-                        map.overlays?.remove(marker)
-                        map.invalidate()
-                    }
+                            btn_maps.visibility = View.INVISIBLE
+                            compass.visibility = View.INVISIBLE
+                            popup.visibility = View.INVISIBLE
+                            img_bees.visibility = View.INVISIBLE
+                            timestamp.visibility = View.INVISIBLE
+                            status.visibility = View.INVISIBLE
+                            email.visibility = View.INVISIBLE
+                            btn_close.visibility = View.INVISIBLE
+                            btn_add.visibility = View.VISIBLE
 
 
-                    btn_navigate.setOnClickListener {
-                        status.text = "Beekeeper on the way!"
-                        btn_navigate.visibility = View.INVISIBLE
-                        marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
-                        map.invalidate()
-                        marker.snippet = "Beekeeper on the way!"
-
-                        btn_maps.visibility = View.VISIBLE
-                        compass.visibility = View.VISIBLE
-
-                        btn_maps.setOnClickListener{
-
-                            //get longitude and latitude of marker
-                            val latitude = marker.position.latitude
-                            val longitude = marker.position.longitude
-
-
-                            val gmmIntentUri =
-                                Uri.parse("google.navigation:q=$latitude,$longitude")
-                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                            mapIntent.setPackage("com.google.android.apps.maps")
-                            startActivity(mapIntent)
+                            //marker.snippet = "Collected!"
+                            map.overlays?.remove(marker)
+                            map.invalidate()
                         }
-                        latitude_marker = latitude
-                        longitude_marker = longitude
 
 
+                        btn_navigate.setOnClickListener {
+                            marker.snippet = "Beekeeper on the way!"
+                            status.text = marker.snippet
+                            btn_navigate.visibility = View.INVISIBLE
+                            marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
+                            map.invalidate()
+
+                            btn_maps.visibility = View.VISIBLE
+                            compass.visibility = View.VISIBLE
+
+                            btn_maps.setOnClickListener{
+
+                                //get longitude and latitude of marker
+                                val latitude = marker.position.latitude
+                                val longitude = marker.position.longitude
+
+
+                                val gmmIntentUri =
+                                    Uri.parse("google.navigation:q=$latitude,$longitude")
+                                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                                mapIntent.setPackage("com.google.android.apps.maps")
+                                startActivity(mapIntent)
+                            }
+                            latitude_marker = latitude
+                            longitude_marker = longitude
+
+
+                        }
+
+                        return true
                     }
+                    "Beekeeper on the way!" -> {
+                        btn_navigate.visibility = View.INVISIBLE
+                        btn_collected.visibility = View.VISIBLE
 
-                    return true
-                }else if (marker.snippet == "Beekeeper on the way!"){
-                    btn_navigate.visibility = View.INVISIBLE
-                    btn_collected.visibility = View.INVISIBLE
+                        // set timestamp and initial status
+                        timestamp.text = time
+                        status.text = marker.snippet
 
-                    // set timestamp and initial status
-                    timestamp.text = time
-                    status.text = marker.snippet
-
-                    return true
-                }
-                else {
-                    // TODO: add for imker in the way
-                    return true
+                        return true
+                    }
+                    else -> {
+                        // TODO: add for imker in the way
+                        return true
+                    }
                 }
             }
         })
