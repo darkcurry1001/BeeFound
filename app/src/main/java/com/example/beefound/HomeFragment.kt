@@ -31,12 +31,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.navigation.NavigationView
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -141,6 +143,33 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
         }
 
+        // set up menu
+        val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
+        menu_view.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_hives -> {
+                    val intent = Intent(requireContext(), SignUp::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(requireContext(), ProfileActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_logout -> {
+                    val intent = Intent(requireContext(), StartActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+            menu_view.visibility = View.INVISIBLE
+            true
+        }
+
+        val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
+
+        transparent_overlay.setOnClickListener {
+            menu_view.visibility = View.INVISIBLE
+            transparent_overlay.visibility = View.INVISIBLE
+        }
 
 
 
@@ -161,7 +190,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
         }
 
 
-
+        // get map
+        val map = view.findViewById<MapView>(R.id.map)
 
         // get vars for all overlay elements
         val popup = view.findViewById<View>(R.id.view_popup)
@@ -199,14 +229,13 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val ctx = activity?.applicationContext
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
 
-        val map = view.findViewById<MapView>(R.id.map)
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)                                   // enable 2 finger zoom
         map.setBuiltInZoomControls(false)                                 // disable zoom buttons
 
         val mapController = map.controller
-        mapController.setZoom(10)                                           // set initial zoom level 14
-        val startPoint = GeoPoint(48.30639, 14.28611)        // change to user's location
+        mapController.setZoom(15)                                           // set initial zoom level 15
+        val startPoint = GeoPoint(latitude_glob, longitude_glob)            // show user location initially
         mapController.setCenter(startPoint)
 
         // add markers (random for now)
@@ -220,8 +249,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
 
         btn_menu.setOnClickListener {
-            val intent = Intent(requireContext(), StartActivity::class.java)
-            startActivity(intent)
+            menu_view.visibility = View.VISIBLE
+            transparent_overlay.visibility = View.VISIBLE
         }
 
         // onclick add swarm button

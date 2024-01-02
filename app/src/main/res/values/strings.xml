@@ -14,4 +14,10 @@
     <string name="phone_number_optional">Phone Number (optional)</string>
     <string name="log_in_underlined"><u>Log In</u></string>
     <string name="sign_up_underlined"><u>Sign Up</u></string>
+    <string name="save">Save</string>
+    <string name="profile">Profile</string>
+    <string name="back">back</string>
+    <string name="logout">Logout</string>
+    <string name="hives">Hives</string>
+    <string name="picture_of_header">picture of header</string>
 </resources>
