@@ -17,7 +17,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/map"
         app:menu="@menu/nav_menu"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        />
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
@@ -27,6 +28,16 @@
         tools:layout_editor_absoluteY="264dp">
 
     </org.osmdroid.views.MapView>
+
+    <View
+        android:id="@+id/transparent_overlay"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toEndOf="@+id/nav_view"
+        app:layout_constraintEnd_toEndOf="@+id/map"
+        android:background="@android:color/transparent"
+        android:visibility="invisible"
+        />
 
     <Button
         android:id="@+id/btn_add_swarm"
