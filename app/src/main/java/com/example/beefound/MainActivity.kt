@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
+import com.example.beefound.api.Api
 import org.osmdroid.views.overlay.Marker
 import java.io.File
 
@@ -21,6 +22,8 @@ class MainActivity : FragmentActivity()  {
 
     var sensor: Sensor? = null
     var sensorManager: SensorManager? = null
+
+    val api = Api()
 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
