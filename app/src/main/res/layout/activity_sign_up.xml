@@ -85,31 +85,18 @@
         app:layout_constraintWidth_percent="0.8"/>
 
     <!-- User Type Selection -->
-    <RadioGroup
+    <Switch
+
         android:id="@+id/userType"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/confirmPassword"
-        app:layout_constraintStart_toStartOf="@id/confirmPassword"
+        android:textOff="User"
+        android:textOn="Beekeeper"
         app:layout_constraintEnd_toEndOf="@id/confirmPassword"
-        android:layout_marginTop="16dp">
-
-        <RadioButton
-            android:id="@+id/regularUser"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/regular_user" />
-
-        <RadioButton
-            android:id="@+id/beekeeper"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-
-            android:text="@string/beekeeper" />
-    </RadioGroup>
+        app:layout_constraintStart_toStartOf="@id/confirmPassword"
+        app:layout_constraintTop_toBottomOf="@id/confirmPassword" />
 
     <!-- Sign Up Button -->
     <Button
