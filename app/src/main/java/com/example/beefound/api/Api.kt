@@ -2,6 +2,7 @@ package com.example.beefound.api
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.material3.contentColorFor
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -11,7 +12,11 @@ class Api {
 
     var BaseUrl: String = "http://192.168.0.42:3000/api/"
 
-    fun Request(url: String, body: String, method:String):Thread{
+    var SessionToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQzOTMzNDQsInJvbGUiOiJ1c2VyIiwidHlwZSI6InNlc3Npb24iLCJ1c2VyX2lkIjoxfQ.9s_Kg3HYD8qpkknEwGtHjoX-z_06cJtZu6XdY0a-Ck8"
+    var RefreshToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQ5OTQ1NDQsInR5cGUiOiJyZWZyZXNoIiwidXNlcl9pZCI6MX0.TMauko0fWg6lVtoerDb6GRngvSOpQ7GaTcHa8ZE75kg"
+
+//    ToDo: handle returns (threads, saving tokens)
+    fun Request(url: String, body: String, method:String, token:String):Thread{
         return Thread {
             val url = URL(BaseUrl + url)
             Log.d("test", "url: " + BaseUrl + url)
@@ -19,6 +24,7 @@ class Api {
             try {
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method
+                connection.setRequestProperty("Token", token)
                 connection.setRequestProperty(
                     "Content-Type",
                     "application/json"
@@ -27,13 +33,15 @@ class Api {
                     "Accept",
                     "application/json"
                 ) // The format of response we want to get from the server
-                connection.doInput = true
-                connection.doOutput = true
 
                 // Send the JSON we created
-                val outputStreamWriter = OutputStreamWriter(connection.outputStream)
-                outputStreamWriter.write(body)
-                outputStreamWriter.flush()
+                if (body != ""){
+                    connection.doOutput = true
+                    connection.doInput = true
+                    val outputStreamWriter = OutputStreamWriter(connection.outputStream)
+                    outputStreamWriter.write(body)
+                    outputStreamWriter.flush()
+                }
 
                 Log.d("test", connection.responseCode.toString())
 
@@ -43,10 +51,12 @@ class Api {
                     val inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
 
                     Log.d("test", inputStreamReader.readText())
+                }else if(connection.responseCode == 401){
+                    Request("auth/refresh", "", "GET", RefreshToken).start()
                 } else {
 //                    Toast.makeText()
                     Log.d("test", "response !!NOT!! ok")
-                    val inputSystem = connection.inputStream
+                    val inputSystem = connection.errorStream
                     val inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
 
                     Log.d("test", inputStreamReader.readText())
@@ -59,20 +69,20 @@ class Api {
         }
     }
 
-    fun GetRequest(url: String, body: String): Thread {
-        return Request(url, body, "GET")
+    fun GetRequest(url: String): Thread {
+        return Request(url, "", "GET", SessionToken)
     }
 
     fun PostRequest(url: String, body: String): Thread {
-        return Request(url, body, "POST")
+        return Request(url, body, "POST", SessionToken)
     }
 
     fun PutRequest(url: String, body: String): Thread {
-        return Request(url, body, "PUT")
+        return Request(url, body, "PUT", SessionToken)
     }
 
     fun DeleteRequest(url: String, body: String): Thread {
-        return Request(url, body, "DELETE")
+        return Request(url, body, "DELETE", SessionToken)
     }
 
 
