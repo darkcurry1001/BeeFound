@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".HomeFragment"
-    android:background="@color/teal_200">
+    android:background="@color/yellow_bee">
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/nav_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/map"
+        app:menu="@menu/nav_menu"
+        android:visibility="invisible"
+        />
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
@@ -16,132 +29,179 @@
 
     </org.osmdroid.views.MapView>
 
+    <View
+        android:id="@+id/transparent_overlay"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toEndOf="@+id/nav_view"
+        app:layout_constraintEnd_toEndOf="@+id/map"
+        android:background="@android:color/transparent"
+        android:visibility="invisible"
+        />
+
     <Button
         android:id="@+id/btn_add_swarm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="50dp"
+        android:paddingRight="18dp"
+        android:paddingLeft="6dp"
         android:text="Add Swarm"
+        android:drawableLeft="@drawable/add_button_svgrepo_com"
+        android:drawablePadding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:background="@drawable/button_rounded_corners"/>
+        android:background="@drawable/button_rounded_corners"
+        android:backgroundTint="@color/white"
+        />
 
     <View
         android:id="@+id/view_popup"
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        android:background="@color/yellow_bee"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:visibility="invisible" />
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/img_bees"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
+        android:layout_width="150dp"
+        android:layout_height="170dp"
+        android:layout_marginTop="5dp"
         android:layout_marginStart="10dp"
         app:layout_constraintStart_toStartOf="@+id/view_popup"
-        app:layout_constraintTop_toBottomOf="@+id/btn_close"
+        app:layout_constraintTop_toBottomOf="@+id/txt_timestamp"
         tools:src="@drawable/bees"
+        app:shapeAppearanceOverlay="@style/RoundedCorners"
+        android:scaleType="centerCrop"
         tools:visibility="invisible"/>
 
     <TextView
         android:id="@+id/txt_timestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
         android:layout_marginLeft="20dp"
-        android:text="Timestamp"
-        app:layout_constraintStart_toEndOf="@+id/img_bees"
-        app:layout_constraintTop_toBottomOf="@+id/btn_close"
+        android:text=" "
+        android:drawableStart="@drawable/date_input_svgrepo_com"
+        app:layout_constraintStart_toStartOf="@+id/view_popup"
+        app:layout_constraintTop_toBottomOf="@id/btn_close"
         tools:visibility="invisible"/>
 
     <TextView
         android:id="@+id/txt_status"
-        android:layout_width="250dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="Status"
-        android:maxEms="25"
-        android:singleLine="false"
-        android:scrollHorizontally="false"
-        android:ellipsize="end"
         android:breakStrategy="balanced"
+        android:layout_marginTop="5dp"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
         android:hyphenationFrequency="normal"
-        app:layout_constraintStart_toStartOf="@+id/txt_timestamp"
-        app:layout_constraintTop_toTopOf="@+id/txt_timestamp"
-        android:visibility="invisible"/>
+        android:maxEms="25"
+        android:scrollHorizontally="false"
+        android:singleLine="false"
+        android:text="Status"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/img_bees"
+        app:layout_constraintTop_toBottomOf="@id/btn_close" />
 
     <TextView
         android:id="@+id/txt_email"
-        android:layout_width="wrap_content"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="35dp"
+        android:layout_marginStart="10dp"
         android:text="Email"
+        android:minLines="3"
         app:layout_constraintStart_toStartOf="@+id/txt_status"
         app:layout_constraintTop_toTopOf="@+id/txt_status"
         android:visibility="invisible"/>
 
     <Button
         android:id="@+id/btn_navigate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="navigate"
-        app:layout_constraintStart_toStartOf="@+id/txt_email"
+        android:layout_width="150dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginStart="25dp"
+        android:text="Navigate"
+        app:layout_constraintStart_toEndOf="@+id/img_bees"
         app:layout_constraintTop_toTopOf="@+id/txt_email"
-        android:backgroundTint="@color/white"
+        android:backgroundTint="@color/yellow_bee"
         android:background="@drawable/button_rounded_corners"
-        android:visibility="invisible"/>
+        style="?android:attr/borderlessButtonStyle"
+        android:visibility="invisible"
+        android:textAllCaps="false"/>
 
     <Button
         android:id="@+id/btn_collected"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:text="collected"
-        app:layout_constraintStart_toEndOf="@+id/btn_navigate"
-        app:layout_constraintTop_toTopOf="@+id/btn_navigate"
-        android:backgroundTint="@color/white"
+        android:layout_width="150dp"
+        android:layout_height="40dp"
+        android:text="Collected"
+        android:layout_marginTop="10dp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toEndOf="@+id/img_bees"
+        app:layout_constraintTop_toBottomOf="@id/btn_navigate"
+        android:backgroundTint="@color/yellow_bee"
         android:background="@drawable/button_rounded_corners"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_marginStart="25dp"
         android:visibility="invisible"/>
 
     <Button
         android:id="@+id/btn_close"
         android:layout_width="match_parent"
         android:layout_height="20dp"
-        android:text="-"
+        android:text=" "
+        android:textColor="@color/yellow_bee"
+        android:textStyle="bold"
+        android:layout_marginTop="-10dp"
         app:layout_constraintEnd_toEndOf="@+id/view_popup"
         app:layout_constraintTop_toTopOf="@+id/view_popup"
+        android:translationY="-10dp"
         android:background="@drawable/btn_shape_close"
+        style="?android:attr/borderlessButtonStyle"
         android:visibility="invisible"/>
 
     <Button
         android:id="@+id/btn_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Menu"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="6dp"
+        android:background="@drawable/menu_button_drawable"
+        android:text=""
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:drawableStart="@drawable/baseline_menu_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/button_rounded_corners" />
+         />
 
     <ImageView
         android:id="@+id/image_compass"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:src="@drawable/compass"
+        android:src="@drawable/bee_compass"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/map" />
 
     <Button
         android:id="@+id/btn_maps"
-        android:layout_width="80dp"
-        android:layout_height="wrap_content"
-        android:text="maps"
+        android:layout_width="75dp"
+        android:layout_height="35dp"
+        android:text="Maps"
+        android:layout_marginEnd="2dp"
+        android:drawableEnd="@drawable/icons8_open_in_new_window"
         app:layout_constraintTop_toBottomOf="@+id/image_compass"
         app:layout_constraintRight_toRightOf="@+id/image_compass"
-        android:background="@drawable/button_rounded_corners" />
+        android:background="@drawable/menu_button_drawable"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textAllCaps="false"/>
 
 
 

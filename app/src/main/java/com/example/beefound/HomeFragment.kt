@@ -3,7 +3,6 @@ package com.example.beefound
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
@@ -29,25 +28,24 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.text.intl.Locale
-import androidx.core.app.ActivityCompat
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.navigation.NavigationView
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
 import java.io.File
-import java.lang.Math.asin
 import java.lang.Math.atan2
 import java.lang.Math.cos
 import java.lang.Math.sin
@@ -122,7 +120,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
         // set timestamp format
-        val sdf = SimpleDateFormat("'Date                Time\n'dd-MM-yyyy    HH:mm:ss z")
+        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
 
         // set activity launcher for camera
         setActivityLauncher(view = view)
@@ -145,6 +143,33 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
         }
 
+        // set up menu
+        val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
+        menu_view.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_hives -> {
+                    val intent = Intent(requireContext(), SignUp::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(requireContext(), ProfileActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_logout -> {
+                    val intent = Intent(requireContext(), StartActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+            menu_view.visibility = View.INVISIBLE
+            true
+        }
+
+        val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
+
+        transparent_overlay.setOnClickListener {
+            menu_view.visibility = View.INVISIBLE
+            transparent_overlay.visibility = View.INVISIBLE
+        }
 
 
 
@@ -165,7 +190,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
         }
 
 
-
+        // get map
+        val map = view.findViewById<MapView>(R.id.map)
 
         // get vars for all overlay elements
         val popup = view.findViewById<View>(R.id.view_popup)
@@ -203,14 +229,13 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val ctx = activity?.applicationContext
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
 
-        val map = view.findViewById<MapView>(R.id.map)
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)                                   // enable 2 finger zoom
         map.setBuiltInZoomControls(false)                                 // disable zoom buttons
 
         val mapController = map.controller
-        mapController.setZoom(10)                                           // set initial zoom level 14
-        val startPoint = GeoPoint(48.30639, 14.28611)        // change to user's location
+        mapController.setZoom(15)                                           // set initial zoom level 15
+        val startPoint = GeoPoint(latitude_glob, longitude_glob)            // show user location initially
         mapController.setCenter(startPoint)
 
         // add markers (random for now)
@@ -220,18 +245,12 @@ class HomeFragment : Fragment(), SensorEventListener  {
         addmarker(view , longitude = 2.28611, latitude = 30.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
         addmarker(view , longitude = 22.28611, latitude = 48.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
 
-
-
-        // onclick collected button
-        /*
-        btn_collected.setOnClickListener {
-            TODO()
-        }*/
+        addlostpoly(view, at = GeoPoint(latitude_glob, longitude_glob) , radius = 1000.0) // add lost swarms (random for now)
 
 
         btn_menu.setOnClickListener {
-            val intent = Intent(requireContext(), StartActivity::class.java)
-            startActivity(intent)
+            menu_view.visibility = View.VISIBLE
+            transparent_overlay.visibility = View.VISIBLE
         }
 
         // onclick add swarm button
@@ -260,7 +279,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
             // set timestamp for marker
             val currentDateAndTime = sdf.format(Date())
 
-            addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+            // open confirmation to add marker
+            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
         }
         // onclick maps button (changes to other fragment for now)
@@ -361,6 +381,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         //marker.isInfoWindowShown // Show the info window
         //marker.title = "Marker Title"
         marker.snippet = "Ready to be collected!"
+        marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
         map.overlays?.add(marker)
         map.invalidate()
         swarms.add(marker)
@@ -399,93 +420,117 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 img_bees.setImageResource(R.drawable.bees)
 
                 // add email, break at @ if too long
-                if (user_email.length > 30) {
+                if (user_email.length > 200) {
                     val email1 = user_email.substring(0, user_email.indexOf("@"))
                     val email2 = user_email.substring(user_email.indexOf("@"))
                     val user_email_split = email1 + "\n" + email2
-                    email.text = "Found by $user_email_split"
+                    email.text = "Found by: \n $user_email_split"
                 } else {
-                    email.text = "Found by ${user_email}"
+                    email.text = "Found by: \n ${user_email}"
                 }
-                if (marker.snippet == "Ready to be collected!") {
-                    btn_navigate.visibility = View.VISIBLE
-                    btn_collected.visibility = View.VISIBLE
+                when (marker.snippet) {
+                    "Ready to be collected!" -> {
+                        btn_navigate.visibility = View.VISIBLE
+                        btn_collected.visibility = View.VISIBLE
 
-                    // set timestamp and initial status
-                    timestamp.text = time
-                    status.text = "Ready to be collected!"
+                        // set timestamp and initial status
+                        timestamp.text = time
+                        status.text = marker.snippet
 
-                    // onclick for collected button
-                    btn_collected.setOnClickListener {
-                        status.text = "Collected!"
-                        btn_collected.visibility = View.INVISIBLE
-                        btn_navigate.visibility = View.INVISIBLE
+                        // onclick for collected button
+                        btn_collected.setOnClickListener {
+                            status.text = "Collected!"
+                            btn_collected.visibility = View.INVISIBLE
+                            btn_navigate.visibility = View.INVISIBLE
 
-                        btn_maps.visibility = View.INVISIBLE
-                        compass.visibility = View.INVISIBLE
-                        popup.visibility = View.INVISIBLE
-                        img_bees.visibility = View.INVISIBLE
-                        timestamp.visibility = View.INVISIBLE
-                        status.visibility = View.INVISIBLE
-                        email.visibility = View.INVISIBLE
-                        btn_close.visibility = View.INVISIBLE
-                        btn_add.visibility = View.VISIBLE
-
-
-
-                        //marker.snippet = "Collected!"
-                        map.overlays?.remove(marker)
-                        map.invalidate()
-                    }
+                            btn_maps.visibility = View.INVISIBLE
+                            compass.visibility = View.INVISIBLE
+                            popup.visibility = View.INVISIBLE
+                            img_bees.visibility = View.INVISIBLE
+                            timestamp.visibility = View.INVISIBLE
+                            status.visibility = View.INVISIBLE
+                            email.visibility = View.INVISIBLE
+                            btn_close.visibility = View.INVISIBLE
+                            btn_add.visibility = View.VISIBLE
 
 
-                    btn_navigate.setOnClickListener {
-                        status.text = "Beekeeper on the way!"
-                        btn_navigate.visibility = View.INVISIBLE
-                        marker.icon = resources.getDrawable(R.drawable.marker_collected, null)
-                        map.invalidate()
-                        marker.snippet = "Beekkeeper on the way!"
-
-                        btn_maps.visibility = View.VISIBLE
-                        compass.visibility = View.VISIBLE
-
-                        btn_maps.setOnClickListener{
-
-                            //get longitude and latitude of marker
-                            val latitude = marker.position.latitude
-                            val longitude = marker.position.longitude
-
-
-                            val gmmIntentUri =
-                                Uri.parse("google.navigation:q=$latitude,$longitude")
-                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                            mapIntent.setPackage("com.google.android.apps.maps")
-                            startActivity(mapIntent)
+                            //marker.snippet = "Collected!"
+                            map.overlays?.remove(marker)
+                            map.invalidate()
                         }
-                        latitude_marker = latitude
-                        longitude_marker = longitude
 
 
+                        btn_navigate.setOnClickListener {
+                            marker.snippet = "Beekeeper on the way!"
+                            status.text = marker.snippet
+                            btn_navigate.visibility = View.INVISIBLE
+                            marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
+                            map.invalidate()
+
+                            btn_maps.visibility = View.VISIBLE
+                            compass.visibility = View.VISIBLE
+
+                            btn_maps.setOnClickListener{
+
+                                //get longitude and latitude of marker
+                                val latitude = marker.position.latitude
+                                val longitude = marker.position.longitude
+
+
+                                val gmmIntentUri =
+                                    Uri.parse("google.navigation:q=$latitude,$longitude")
+                                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                                mapIntent.setPackage("com.google.android.apps.maps")
+                                startActivity(mapIntent)
+                            }
+                            latitude_marker = latitude
+                            longitude_marker = longitude
+
+
+                        }
+
+                        return true
                     }
+                    "Beekeeper on the way!" -> {
+                        btn_navigate.visibility = View.INVISIBLE
+                        btn_collected.visibility = View.VISIBLE
 
-                    return true
-                }else if (marker.snippet == "Beekkeeper on the way!"){
-                    btn_navigate.visibility = View.INVISIBLE
-                    btn_collected.visibility = View.INVISIBLE
+                        // set timestamp and initial status
+                        timestamp.text = time
+                        status.text = marker.snippet
 
-                    // set timestamp and initial status
-                    timestamp.text = time
-                    status.text = marker.snippet
-
-                    return true
-                }
-                else {
-                    // TODO: add for imker in the way
-                    return true
+                        return true
+                    }
+                    else -> {
+                        // TODO: add for imker in the way
+                        return true
+                    }
                 }
             }
         })
     }
+
+    fun markerConfirmation(view: View, longitude: Double, latitude: Double, header: String, snippet: String, time: String, user_email: String) {
+        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
+
+        Log.d(TAG, "conformation")
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        builder
+            .setTitle("Confirm")
+            .setMessage("Do you want to add a new swarm?")
+            .setPositiveButton("Yes") { dialog, which ->
+                // add marker
+                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "coroian.petruta.simina_even_longer@gmail.com")
+            }
+            .setNegativeButton("No") { dialog, which ->
+                // Do not add marker
+            }
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+    }
+
 
     fun takePhoto() {
         Log.d(TAG, "Use system camera to take photo")
@@ -506,6 +551,36 @@ class HomeFragment : Fragment(), SensorEventListener  {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun addlostpoly(view: View, at: GeoPoint, radius: Double) {
+        /*
+        view ... map view from fragment_home.xml to add the polygon to
+        at ... GeoPoint of location of the center of the circle
+        radius ... radius of the circle in meters
+        */
+
+        val map = view.findViewById<MapView>(R.id.map)
+        val circle = Polygon()
+        circle.setFillColor(0x3000FF00)             // Fill color (semi-transparent green)
+        circle.setStrokeColor(0xFF00FF00.toInt())   // Stroke color (green)
+        circle.setStrokeWidth(2F)                   // Stroke width
+
+        val numberOfPoints = 100 // Number of points to create a smooth circle
+
+        // calculate points for the circle
+        for (i in 0 until numberOfPoints) {
+            val angle = Math.PI * 2 * i / numberOfPoints
+            val x: Double = at.latitude + radius / 111000.0 * cos(angle)
+            val y: Double = at.longitude + radius / (111000.0 * cos(Math.toRadians(at.latitude))) * sin(angle)
+            circle.addPoint(GeoPoint(x, y))
+        }
+
+        // Add the circle Polygon to the map
+        map.overlays?.add(circle);
+
+        // Refresh the map to display the circle
+        map.invalidate()
     }
 
     private fun setActivityLauncher(view: View) {
