@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -28,7 +30,8 @@ class SignUp : Activity() {
         val username = findViewById<TextView>(R.id.username)
         val email = findViewById<TextView>(R.id.email)
         val phone = findViewById<TextView>(R.id.phone)
-        val user_role = findViewById<Switch>(R.id.userType)
+        val user_role_reg = findViewById<RadioButton>(R.id.regularUser)
+        val user_role_beekeeper = findViewById<RadioButton>(R.id.beekeeper)
         val psw = findViewById<TextView>(R.id.password)
         val pswConfirm = findViewById<TextView>(R.id.confirmPassword)
 
@@ -69,7 +72,7 @@ class SignUp : Activity() {
             jsonObject.put("username", username.text.toString())
             jsonObject.put("email", email.text.toString())
             jsonObject.put("phone", phone.text.toString())
-            jsonObject.put("role", if (user_role.isChecked) "beekeeper" else "user")
+            jsonObject.put("role", if (user_role_beekeeper.isChecked) "beekeeper" else "user")
             jsonObject.put("password", psw.text.toString())
 
             val api = Api()
