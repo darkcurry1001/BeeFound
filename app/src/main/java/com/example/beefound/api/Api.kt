@@ -1,10 +1,11 @@
 package com.example.beefound.api
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.asLiveData
 import android.widget.Toast
 import androidx.compose.material3.contentColorFor
+import com.example.beefound.MainActivity
 import com.example.beefound.StartActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
@@ -16,7 +17,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class Api {
-    var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    //var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    var BaseUrl: String = "http://skeller.at:3000/api/"
 
     var SessionToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQzOTMzNDQsInJvbGUiOiJ1c2VyIiwidHlwZSI6InNlc3Npb24iLCJ1c2VyX2lkIjoxfQ.9s_Kg3HYD8qpkknEwGtHjoX-z_06cJtZu6XdY0a-Ck8"
     var RefreshToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQ5OTQ1NDQsInR5cGUiOiJyZWZyZXNoIiwidXNlcl9pZCI6MX0.TMauko0fWg6lVtoerDb6GRngvSOpQ7GaTcHa8ZE75kg"
@@ -31,7 +33,6 @@ class Api {
         SessionToken = LocalStorageManager.readStringFromFile("sessionToken")
         RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
     }
-
 
     fun Login(sT: String, rT: String){
         SessionToken = sT

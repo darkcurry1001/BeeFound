@@ -9,6 +9,8 @@ import android.widget.Button
 import android.widget.Toast
 import com.example.beefound.R
 import com.example.beefound.api.Api
+import com.example.beefound.api.Middleware
+import com.example.beefound.api.User
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -27,6 +29,14 @@ class StartActivity : Activity() {
         api.GetRequest("auth/test/", fun (response: String){
             runOnUiThread {
                 kotlin.run {
+                    Middleware.getUser(fun (user: User){
+                        runOnUiThread {
+                            kotlin.run {
+                                Log.d("test", "user: " + user.username)
+                            }
+                        }
+                    })
+
                         Toast.makeText(this, "Logged in", Toast.LENGTH_LONG).show()
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
