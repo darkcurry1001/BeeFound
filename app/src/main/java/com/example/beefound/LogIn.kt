@@ -8,6 +8,8 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.example.beefound.api.Middleware
+import com.example.beefound.api.User
 import org.json.JSONObject
 
 class LogIn : Activity() {
@@ -38,8 +40,22 @@ class LogIn : Activity() {
                                 json.getString("session_token"),
                                 json.getString("refresh_token")
                             )
-                            val intent = Intent(this, MainActivity::class.java)
-                            startActivity(intent)
+                            Middleware.getUser(fun(user: User) {
+                                runOnUiThread {
+                                    kotlin.run {
+                                        StartActivity.userGlob = user
+                                        Log.d("test", "user: " + StartActivity.userGlob.username)
+                                        val intent = Intent(this, MainActivity::class.java)
+                                        intent.putExtra("id", StartActivity.userGlob.id)
+                                        intent.putExtra("username", StartActivity.userGlob.username)
+                                        intent.putExtra("email", StartActivity.userGlob.email)
+                                        intent.putExtra("phone", StartActivity.userGlob.phone)
+                                        intent.putExtra("user_role", StartActivity.userGlob.user_role)
+                                        Toast.makeText(this, "Logged in", Toast.LENGTH_LONG).show()
+                                        startActivity(intent)
+                                    }
+                                }
+                            }).start()
                         }
                     }
                 },

@@ -3,6 +3,7 @@ package com.example.beefound
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -11,8 +12,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
 import com.example.beefound.api.Api
+import com.example.beefound.api.Middleware
+import com.example.beefound.api.User
 import com.example.beefound.databinding.ActivityLogInBinding
 import com.example.beefound.databinding.ActivitySignUpBinding
+import kotlinx.coroutines.awaitAll
 import org.json.JSONObject
 
 
@@ -30,6 +34,7 @@ class SignUp : Activity() {
             val intent = Intent(this, LogIn::class.java)
             startActivity(intent)
         }
+        var success = false
 
         val signUp = findViewById<Button>(R.id.signUpButton)
         val username = findViewById<TextView>(R.id.username)
@@ -76,7 +81,7 @@ class SignUp : Activity() {
 
             val jsonObject = JSONObject()
             jsonObject.put("username", username.text.toString())
-            jsonObject.put("email", email.text.toString())
+            jsonObject.put("email",email.text.toString())
             jsonObject.put("phone", phone.text.toString())
             jsonObject.put("role", if (user_role_beekeeper.isChecked) "beekeeper" else "user")
             jsonObject.put("password", psw.text.toString())
@@ -90,8 +95,9 @@ class SignUp : Activity() {
 
                         StartActivity.api.Login(sessionT, refreshT)
 
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)}
+                        intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                    }
                 }}, fun (i:Int, s: String){
                     runOnUiThread {
                         kotlin.run {
