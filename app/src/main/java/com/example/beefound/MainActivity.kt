@@ -19,6 +19,10 @@ import java.io.File
 
 
 class MainActivity : FragmentActivity()  {
+
+    lateinit var searched_hive_name: String
+    var searched_hive_lat: Double = 0.0
+    var searched_hive_long: Double = 0.0
     private val IMAGE_FILE_NAME: String = "test.jpg"
 
     private var photoFile: File = File("drawable/bees.jpg")
@@ -39,7 +43,6 @@ class MainActivity : FragmentActivity()  {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         userName = intent.getStringExtra("username") ?: ""
         userEmail = intent.getStringExtra("email") ?: ""
@@ -62,9 +65,10 @@ class MainActivity : FragmentActivity()  {
             }
         }).start()
 
+
+        setContentView(R.layout.activity_home)
+
     }
-
-
 
     fun createPhotoFile(): File? {
         // check if external media is available
@@ -90,9 +94,6 @@ class MainActivity : FragmentActivity()  {
     fun getImageFile(): File? {
         return photoFile
     }
-
-
-
 
 }
 

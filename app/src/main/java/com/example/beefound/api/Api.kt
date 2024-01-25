@@ -17,7 +17,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class Api {
-//    var BaseUrl: String = "http://192.168.0.42:3000/api/"
+
+  //var BaseUrl: String = "http://192.168.0.42:3000/api/"
+
     var BaseUrl: String = "http://skeller.at:3000/api/"
 
 
