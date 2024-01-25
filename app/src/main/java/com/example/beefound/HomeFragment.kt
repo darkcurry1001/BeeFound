@@ -466,7 +466,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             map.overlays?.remove(marker)
                             map.invalidate()
 
-                            //todo StartActivity.api.PostRequest()
+                            //todo StartActivity.api.DeleteRequest()
                         }
 
 
