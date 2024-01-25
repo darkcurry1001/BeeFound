@@ -19,12 +19,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class Api {
-    var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    var BaseUrl: String = "http://skeller.at:3000/api/"
+//    var BaseUrl: String = "http://192.168.0.42:3000/api/"
 
-    var SessionToken: String =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDYxODMwMDUsInJvbGUiOiJiZWVrZWVwZXIiLCJ0eXBlIjoic2Vzc2lvbiIsInVzZXJfaWQiOjF9.SNVlRDIz2hVZyepSD5b1zlz1CCa5q9Syz9xVp8ZYWno"
-    var RefreshToken: String =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDY3ODg3NDEsInR5cGUiOiJyZWZyZXNoIiwidXNlcl9pZCI6MX0.nxVd1f0cqmvDiZbxN_d38d2ZtV6yplA1uKJP3z5L-Uc"
+    var SessionToken: String = ""
+    var RefreshToken: String = ""
 
     lateinit var context: Context
     var refreshOkCallback: () -> Unit = fun() {}
@@ -40,8 +39,8 @@ class Api {
         this.refreshOkCallback = refreshOkCallback
         this.refreshErrCallback = refreshErrCallback
 
-//        SessionToken = LocalStorageManager.readStringFromFile("sessionToken")
-//        RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
+        SessionToken = LocalStorageManager.readStringFromFile("sessionToken")
+        RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
     }
 
 
