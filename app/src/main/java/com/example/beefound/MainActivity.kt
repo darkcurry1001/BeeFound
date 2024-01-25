@@ -66,9 +66,6 @@ class MainActivity : FragmentActivity()  {
             }
         }).start()
 
-
-        setContentView(R.layout.activity_home)
-
     }
 
     fun createPhotoFile(): File? {
