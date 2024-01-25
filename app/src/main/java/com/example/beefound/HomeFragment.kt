@@ -32,7 +32,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
-import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -50,26 +49,15 @@ import java.io.File
 import java.lang.Math.atan2
 import java.lang.Math.cos
 import java.lang.Math.sin
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment(), SensorEventListener  {
     val role: String = "Beekeeper"
     // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
     private val CAMERA_REQUEST_CODE = 4711
     private var someActivityResultLauncher: ActivityResultLauncher<Intent>? = null
@@ -105,10 +93,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
 
     }
 
@@ -118,6 +102,21 @@ class HomeFragment : Fragment(), SensorEventListener  {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // get user data from MainActivity
+        val main = (activity as MainActivity)
+        val userEmail = main.userEmail
+        val userId = main.userId
+        val userName = main.userName
+        val userPhone = main.userPhone
+        val userRole = main.userRole
+
+        // get hive data from MainActivity
+        val hivesFound = main.hives_Found
+        val hivesNavigated = main.hives_Navigated
+        val hivesSaved = main.hives_Saved
+        val hivesSearched = main.hives_Searched
+        Log.d("test", "hives: $hivesFound")
+
         // Inflate the layout for this fragment
         var view = inflater.inflate(R.layout.fragment_home_regular_user, container, false)
 
@@ -185,7 +184,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
         }
         else{
-
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.nav_profile -> {
@@ -201,6 +199,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 menu_view.visibility = View.INVISIBLE
                 true
             }
+
 
             transparent_overlay.setOnClickListener {
                 menu_view.visibility = View.INVISIBLE
@@ -275,15 +274,23 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val startPoint = GeoPoint(latitude_glob, longitude_glob)            // show user location initially
         mapController.setCenter(startPoint)
 
-        // add markers (random for now)
-        addmarker(view , longitude = 48.8583, latitude = 2.2944, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        addmarker(view , longitude = 2.28611, latitude = 48.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        //addmarker(view , longitude = 2.2944, latitude = 48.8583, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        addmarker(view , longitude = 2.28611, latitude = 30.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        addmarker(view , longitude = 22.28611, latitude = 48.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
+        // add markers of found hives
+        for (hive in hivesFound){
+            Log.d("test", "hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "my text", time = reformatDateTime(hive.created), user_email = hive.id.toString())
+        }
 
-        addlostpoly(view, at = GeoPoint(latitude_glob, longitude_glob) , radius = 1000.0) // add lost swarms (random for now)
+        // add markers of navigated hives
+        for (hive in hivesNavigated){
+            Log.d("test", "hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "my text", time = reformatDateTime(hive.created), user_email = hive.id.toString())
+        }
 
+        // add polys of searched hives
+        for (hive in hivesSearched){
+            Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0) // add lost swarms (random for now)
+        }
 
         btn_menu.setOnClickListener {
             menu_view.visibility = View.VISIBLE
@@ -320,7 +327,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             val currentDateAndTime = sdf.format(Date())
 
             // open confirmation to add marker
-            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = userEmail)
 
         }
         // onclick maps button
@@ -502,10 +509,10 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_close.visibility = View.INVISIBLE
                             btn_add.visibility = View.VISIBLE
 
-
-                            //marker.snippet = "Collected!"
                             map.overlays?.remove(marker)
                             map.invalidate()
+
+                            //todo StartActivity.api.PostRequest()
                         }
 
 
@@ -577,7 +584,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             .setMessage("Do you want to add a new swarm?")
             .setPositiveButton("Yes") { dialog, which ->
                 // add marker
-                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "coroian.petruta.simina_even_longer@gmail.com")
+                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = user_email)
             }
             .setNegativeButton("No") { dialog, which ->
                 // Do not add marker
@@ -657,28 +664,18 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 })
     }
 
+    fun reformatDateTime(originalDateTime: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS", Locale.US)
+        val outputFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.US)
 
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        try {
+            val parsedDate = inputFormat.parse(originalDateTime)
+            return outputFormat.format(parsedDate)
+        } catch (e: ParseException) {
+            // Handle the exception, e.g., log it or return an error string
+            e.printStackTrace()
+            return "Invalid Date"
+        }
     }
-
-
 
 }
