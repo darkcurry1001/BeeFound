@@ -23,13 +23,10 @@ class MainActivity : FragmentActivity()  {
     var sensor: Sensor? = null
     var sensorManager: SensorManager? = null
 
-    val api = Api()
-
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-
     }
 
     fun createPhotoFile(): File? {
