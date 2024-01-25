@@ -54,6 +54,7 @@ class MainActivity : FragmentActivity()  {
         Middleware.getHives(fun(hivesFound: MutableList<Hive>, hivesNavigated: MutableList<Hive>, hivesSaved: MutableList<Hive>, hivesSearched: MutableList<Hive>){
             runOnUiThread {
                 kotlin.run {
+                    Log.d("test", "gethives: ")
                     hives_Found = hivesFound
                     hives_Navigated = hivesNavigated
                     hives_Saved = hivesSaved
