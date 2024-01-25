@@ -91,7 +91,7 @@ class SignUp : Activity() {
                     kotlin.run {
                         val jsonObject = JSONObject(response)
                         val sessionT:String = jsonObject.get("session_token").toString()
-                        val refreshT = jsonObject.get("refresh_token").toString()
+                        val refreshT:String = jsonObject.get("refresh_token").toString()
 
                         StartActivity.api.Login(sessionT, refreshT)
 

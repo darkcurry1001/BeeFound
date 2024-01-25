@@ -39,6 +39,9 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.navigation.NavigationView
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -141,7 +144,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         var locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
-                for (location in locationResult.locations){
+                for (location in locationResult.locations) {
                     latitude_glob = location.latitude
                     longitude_glob = location.longitude
                     Log.d(TAG, "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
@@ -149,6 +152,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
         }
         val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
+
         val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
         if(role == "Beekeeper"){
 
@@ -171,14 +175,12 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 menu_view.visibility = View.INVISIBLE
                 true
             }
-
-
-
             transparent_overlay.setOnClickListener {
                 menu_view.visibility = View.INVISIBLE
                 transparent_overlay.visibility = View.INVISIBLE
             }
         }
+        
         else{
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
@@ -197,6 +199,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             }
 
 
+
             transparent_overlay.setOnClickListener {
                 menu_view.visibility = View.INVISIBLE
                 transparent_overlay.visibility = View.INVISIBLE
@@ -206,17 +209,37 @@ class HomeFragment : Fragment(), SensorEventListener  {
         // set up menu
 
 
-        if (checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             Log.d(TAG, "Location permission granted")
-            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())}
-        else {
-            requestPermissions(arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE)
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        } else {
+            requestPermissions(
+                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQ_CODE
+            )
             Log.d(TAG, "Location permission requested")
-            Toast.makeText(requireContext(), "Location permission needed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Location permission needed", Toast.LENGTH_SHORT)
+                .show()
             // check if permission was granted and take picture (does not work yet)
-            if (checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 Log.d(TAG, "Location permission granted")
-                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+                fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper()
+                )
             }
 
         }
@@ -267,7 +290,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
         val mapController = map.controller
         mapController.setZoom(15)                                           // set initial zoom level 15
-        val startPoint = GeoPoint(latitude_glob, longitude_glob)            // show user location initially
+        val startPoint =
+            GeoPoint(latitude_glob, longitude_glob)            // show user location initially
         mapController.setCenter(startPoint)
 
         // add markers of found hives
@@ -300,20 +324,31 @@ class HomeFragment : Fragment(), SensorEventListener  {
             Log.d(TAG, "Latitude_sea: ${searchedhivelat}, Longitude: ${searchedhivelong}")
             //getCurrentLocation()
             // Camera permissions and take photo
-            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
 
-            if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 Log.d(TAG, "Camera permission granted")
                 takePhoto()
             } else {
                 // request permission
-
-
                 requestPermissions(arrayOf<String>(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
                 Log.d(TAG, "Camera permission requested")
-                Toast.makeText(requireContext(), "Camera permission needed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Camera permission needed", Toast.LENGTH_SHORT)
+                    .show()
                 // check if permission was granted and take picture (does not work yet)
-                if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                if (checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
                     Log.d(TAG, "Camera permission granted")
                     takePhoto()
                 }
@@ -323,11 +358,21 @@ class HomeFragment : Fragment(), SensorEventListener  {
             val currentDateAndTime = sdf.format(Date())
 
             // open confirmation to add marker
-            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = userEmail)
+            markerConfirmation(
+                view,
+                longitude = longitude_glob,
+                latitude = latitude_glob,
+                header = "",
+                snippet = "",
+                time = sdf.format(Date()),
+                user_email = "max.mustermann_der_neue@gmail.com",
+                img = (activity as MainActivity?)?.getImageFile()
+            )
 
         }
-        // onclick maps button
-        btn_maps.setOnClickListener{
+        // onclick maps button (changes to other fragment for now)
+        //btn_maps.setOnClickListener { Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_popupFragment) }
+        btn_maps.setOnClickListener {
             val gmmIntentUri =
                 Uri.parse("google.navigation:q=48.30639,14.28611")
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
@@ -363,11 +408,18 @@ class HomeFragment : Fragment(), SensorEventListener  {
             Toast.makeText(requireContext(), "Sensors not available", Toast.LENGTH_SHORT).show()
         }
     }
+
     override fun onSensorChanged(event: SensorEvent?) {
 
         if (event != null) {
             if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
+                System.arraycopy(
+                    event.values,
+                    0,
+                    accelerometerReading,
+                    0,
+                    accelerometerReading.size
+                )
             } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
                 System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
             }
@@ -380,12 +432,14 @@ class HomeFragment : Fragment(), SensorEventListener  {
         )
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
 
-        rotation = (Math.toDegrees(orientationAngles[0].toDouble())+360)%360
+        rotation = (Math.toDegrees(orientationAngles[0].toDouble()) + 360) % 360
 
         var diff_lon = longitude_marker - longitude_glob
 
         var y = sin(Math.toRadians(diff_lon)) * cos(Math.toRadians(latitude_marker))
-        var x = cos(Math.toRadians(latitude_glob)) * sin(Math.toRadians(latitude_marker)) - sin(Math.toRadians(latitude_glob)) * cos(Math.toRadians(latitude_marker)) * cos(Math.toRadians(diff_lon))
+        var x = cos(Math.toRadians(latitude_glob)) * sin(Math.toRadians(latitude_marker)) - sin(
+            Math.toRadians(latitude_glob)
+        ) * cos(Math.toRadians(latitude_marker)) * cos(Math.toRadians(diff_lon))
 
 
         var angle = atan2(y, x)
@@ -400,6 +454,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
 
     }
+
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // Not needed for this example
     }
@@ -416,7 +471,15 @@ class HomeFragment : Fragment(), SensorEventListener  {
     }
 
     // add new marker to map
-    fun addmarker(view: View, longitude: Double, latitude: Double, header: String, snippet: String, time: String, user_email: String) {
+    fun addmarker(
+        view: View,
+        longitude: Double,
+        latitude: Double,
+        header: String,
+        snippet: String,
+        time: String,
+        user_email: String
+    ) {
         val map = view.findViewById<MapView>(R.id.map)
         val marker = Marker(map)
         marker.position = GeoPoint(latitude, longitude) // Set the position for the marker
@@ -522,7 +585,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_maps.visibility = View.VISIBLE
                             compass.visibility = View.VISIBLE
 
-                            btn_maps.setOnClickListener{
+                            btn_maps.setOnClickListener {
 
                                 //get longitude and latitude of marker
                                 val latitude = marker.position.latitude
@@ -543,6 +606,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
                         return true
                     }
+
                     "Beekeeper on the way!" -> {
                         if (role == "Beekeeper") {
                             btn_navigate.visibility = View.INVISIBLE
@@ -559,6 +623,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
                         return true
                     }
+
                     else -> {
                         // TODO: add for imker in the way
                         return true
@@ -569,7 +634,16 @@ class HomeFragment : Fragment(), SensorEventListener  {
         })
     }
 
-    fun markerConfirmation(view: View, longitude: Double, latitude: Double, header: String, snippet: String, time: String, user_email: String) {
+    fun markerConfirmation(
+        view: View,
+        longitude: Double,
+        latitude: Double,
+        header: String,
+        snippet: String,
+        time: String,
+        user_email: String,
+        img: File? = null
+    ) {
         val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
 
         Log.d(TAG, "conformation")
@@ -580,7 +654,26 @@ class HomeFragment : Fragment(), SensorEventListener  {
             .setMessage("Do you want to add a new swarm?")
             .setPositiveButton("Yes") { dialog, which ->
                 // add marker
-                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = user_email)
+                Thread(Runnable {
+                    StartActivity.api.sendMultipartRequest(
+                        jsonData = "{\"Latitude\":\"$latitude_glob\",\"Longitude\":\"$longitude_glob\",\"type\":\"found\"}",
+                        imageFile = img,
+                        serverUrl = "hive/found"
+                    )
+                    requireActivity().runOnUiThread {
+                        Log.d("test", "FileSend UI update")
+                        addmarker(
+                            view,
+                            longitude = longitude_glob,
+                            latitude = latitude_glob,
+                            header = "",
+                            snippet = "",
+                            time = sdf.format(Date()),
+                            user_email = "coroian.petruta.simina_even_longer@gmail.com"
+                        )
+                    }
+                }).start()
+
             }
             .setNegativeButton("No") { dialog, which ->
                 // Do not add marker
@@ -591,7 +684,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
     }
 
 
-    fun takePhoto() {
+    fun takePhoto(): File? {
         Log.d(TAG, "Use system camera to take photo")
         // use Intent to access camera
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -603,13 +696,16 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 photoURI = FileProvider.getUriForFile(
                     requireActivity(),
                     "com.example.beefound.fileprovider",
-                    imageFile)
+                    imageFile
+                )
             }
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
             someActivityResultLauncher?.launch(takePictureIntent)
+            return imageFile
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        return null
     }
 
     fun addlostpoly(view: View, at: GeoPoint, radius: Double) {
@@ -631,7 +727,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
         for (i in 0 until numberOfPoints) {
             val angle = Math.PI * 2 * i / numberOfPoints
             val x: Double = at.latitude + radius / 111000.0 * cos(angle)
-            val y: Double = at.longitude + radius / (111000.0 * cos(Math.toRadians(at.latitude))) * sin(angle)
+            val y: Double =
+                at.longitude + radius / (111000.0 * cos(Math.toRadians(at.latitude))) * sin(angle)
             circle.addPoint(GeoPoint(x, y))
         }
 
@@ -673,5 +770,5 @@ class HomeFragment : Fragment(), SensorEventListener  {
             return "Invalid Date"
         }
     }
-
 }
+
