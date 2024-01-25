@@ -531,7 +531,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             .setMessage("Do you want to add a new swarm?")
             .setPositiveButton("Yes") { dialog, which ->
                 // add marker
-                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "coroian.petruta.simina_even_longer@gmail.com")
+                addmarker(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = user_email)
             }
             .setNegativeButton("No") { dialog, which ->
                 // Do not add marker
