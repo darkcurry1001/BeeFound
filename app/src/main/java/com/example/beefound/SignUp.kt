@@ -86,10 +86,9 @@ class SignUp : Activity() {
                     kotlin.run {
                         val jsonObject = JSONObject(response)
                         val sessionT:String = jsonObject.get("session_token").toString()
-                        val refreshT = jsonObject.get("refresh_token").toString()
+                        val refreshT:String = jsonObject.get("refresh_token").toString()
 
-                        Api.LocalStorageManager.saveStringToFile("sessionToken", sessionT)
-                        Api.LocalStorageManager.saveStringToFile("refreshToken", refreshT)
+                        StartActivity.api.Login(sessionT, refreshT)
 
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)}
