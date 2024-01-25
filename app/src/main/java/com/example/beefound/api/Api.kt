@@ -11,16 +11,21 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.DataOutputStream
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 
 class Api {
-//    var BaseUrl: String = "http://192.168.0.42:3000/api/"
+  //var BaseUrl: String = "http://192.168.0.42:3000/api/"
+
     var BaseUrl: String = "http://skeller.at:3000/api/"
-
-
+  
     var SessionToken: String = ""
     var RefreshToken: String = ""
 
@@ -62,7 +67,8 @@ class Api {
     fun Request(
         urlString: String, body: String, method: String, token: String = SessionToken,
         okCallback: (String) -> Unit = fun(_) {},
-        errCallback: (Int, String) -> Unit = fun(_, _) {}
+        errCallback: (Int, String) -> Unit = fun(_, _) {},
+        sendType: String = "application/json", recieveType: String = "application/json"
     ): Thread {
         return Thread {
             val url = URL(BaseUrl + urlString)
@@ -71,14 +77,15 @@ class Api {
             try {
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method
+                connection.setRequestProperty("Connection", "Keep-Alive")
                 connection.setRequestProperty("Token", token)
                 connection.setRequestProperty(
                     "Content-Type",
-                    "application/json"
+                    sendType
                 ) // The format of the content we're sending to the server
                 connection.setRequestProperty(
                     "Accept",
-                    "application/json"
+                    recieveType
                 ) // The format of response we want to get from the server
 
                 // Send the JSON we created
@@ -101,13 +108,13 @@ class Api {
                     Log.d("test", response)
                     okCallback(response)
                 } else {
+                    Log.d("test", "response !!NOT!! ok")
+                    Log.d("test", InputStreamReader(connection.errorStream).readText())
                     if (connection.responseCode == 401) {
                         if (RefreshToken != token) {
                             RefreshRequest(urlString, body, method, okCallback, errCallback)
                         }
                         Log.d("test", "response 401")
-                    } else {
-                        Log.d("test", "response !!NOT!! ok")
                     }
                     errCallback(connection.responseCode, connection.responseMessage)
                 }
@@ -171,6 +178,99 @@ class Api {
         callback: (String) -> Unit,
         errorCallback: (Int, String) -> Unit = fun(_, _) {}
     ): Thread {
-        return Request(url, body, "DELETE", okCallback = callback, errCallback = errorCallback)
+        return Request(url, body, "DELETE", okCallback = callback, errCallback = errorCallback
+        )
     }
+
+    fun sendMultipartRequest(jsonData: String, imageFile: File?, serverUrl: String) {
+        Log.d("test", "FileSend")
+        val boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW" // Replace with your desired boundary
+
+        val url = URL(BaseUrl + serverUrl)
+        val connection = url.openConnection() as HttpURLConnection
+
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Token", SessionToken)
+        connection.doOutput = true
+        connection.doInput = true
+        connection.useCaches = false
+        connection.setRequestProperty("Connection", "Keep-Alive")
+        connection.setRequestProperty("Cache-Control", "no-cache")
+        connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=$boundary")
+
+        Log.d("test", "FileSend2")
+        try {
+            val outputStream = DataOutputStream(connection.outputStream)
+
+            // Add JSON part
+            Log.d("test", jsonData)
+            addFormField("json", jsonData, boundary, outputStream)
+
+            // Add image file part
+            Log.d("test", (imageFile != null).toString())
+            if (imageFile != null) {
+                addFilePart("img", imageFile, boundary, outputStream)
+            }
+
+            // End of multipart/form-data
+            outputStream.writeBytes("--$boundary--\r\n")
+
+            outputStream.flush()
+            outputStream.close()
+
+            // Get the response code
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Successfully sent the request
+                // Read the response if needed
+                val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                var line: String?
+                val response = StringBuilder()
+
+                while (reader.readLine().also { line = it } != null) {
+                    response.append(line)
+                }
+
+                reader.close()
+                // Handle the response here
+            } else {
+                // Handle error
+                if (connection.responseCode == 401) {
+                    RefreshRequest(serverUrl, jsonData, "POST", fun(s: String) {
+                        sendMultipartRequest(jsonData, imageFile, serverUrl)
+                    })
+                }
+                Log.d("test", "File Send Error")
+                Log.d("test", connection.responseMessage)
+                Log.d("test", InputStreamReader(connection.errorStream).readText())
+            }
+        } finally {
+            Log.d("test", "FileSend End")
+            connection.disconnect()
+        }
+    }
+
+    private fun addFormField(fieldName: String, value: String, boundary: String, outputStream: DataOutputStream) {
+        outputStream.writeBytes("--$boundary\r\n")
+        outputStream.writeBytes("Content-Disposition: form-data; name=\"$fieldName\"\r\n\r\n")
+        outputStream.writeBytes(value + "\r\n")
+    }
+
+    private fun addFilePart(fieldName: String, uploadFile: File, boundary: String, outputStream: DataOutputStream) {
+        outputStream.writeBytes("--$boundary\r\n")
+        outputStream.writeBytes("Content-Disposition: form-data; name=\"$fieldName\"; filename=\"${uploadFile.name}\"\r\n")
+        outputStream.writeBytes("Content-Type: application/octet-stream\r\n\r\n")
+
+        val fileInputStream = FileInputStream(uploadFile)
+        val buffer = ByteArray(4096)
+        var bytesRead: Int
+        while (fileInputStream.read(buffer).also { bytesRead = it } != -1) {
+            outputStream.write(buffer, 0, bytesRead)
+        }
+        outputStream.writeBytes("\r\n")
+        fileInputStream.close()
+    }
+
 }
+
+
