@@ -320,9 +320,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
         // onclick add swarm button
         btn_add.setOnClickListener {
 
-            addlostpoly(view, at = GeoPoint(searchedhivelat, searchedhivelong) , radius = 1000.0)
-            Log.d(TAG, "Latitude_sea: ${searchedhivelat}, Longitude: ${searchedhivelong}")
-            //getCurrentLocation()
             // Camera permissions and take photo
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
@@ -365,7 +362,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 header = "",
                 snippet = "",
                 time = sdf.format(Date()),
-                user_email = "max.mustermann_der_neue@gmail.com",
+                user_email = userEmail,
                 img = (activity as MainActivity?)?.getImageFile()
             )
 
@@ -669,7 +666,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             header = "",
                             snippet = "",
                             time = sdf.format(Date()),
-                            user_email = "coroian.petruta.simina_even_longer@gmail.com"
+                            user_email = user_email
                         )
                     }
                 }).start()
