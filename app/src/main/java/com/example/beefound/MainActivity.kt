@@ -16,6 +16,10 @@ import java.io.File
 
 
 class MainActivity : FragmentActivity()  {
+
+    lateinit var searched_hive_name: String
+    var searched_hive_lat: Double = 0.0
+    var searched_hive_long: Double = 0.0
     private val IMAGE_FILE_NAME: String = "test.jpg"
 
     private var photoFile: File = File("drawable/bees.jpg")
@@ -27,6 +31,10 @@ class MainActivity : FragmentActivity()  {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        searched_hive_name = intent.getStringExtra("hive_name").toString()
+        searched_hive_lat = intent.getDoubleExtra("hive_latitude", 0.0)
+        searched_hive_long = intent.getDoubleExtra("hive_longitude", 0.0)
     }
 
     fun createPhotoFile(): File? {
@@ -53,6 +61,7 @@ class MainActivity : FragmentActivity()  {
     fun getImageFile(): File? {
         return photoFile
     }
+
 
 
 

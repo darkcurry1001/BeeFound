@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.getIntent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.hardware.Sensor
@@ -65,6 +66,7 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class HomeFragment : Fragment(), SensorEventListener  {
+    val role: String = "Beekeeper"
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -117,7 +119,16 @@ class HomeFragment : Fragment(), SensorEventListener  {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_home, container, false)
+        var view = inflater.inflate(R.layout.fragment_home_regular_user, container, false)
+
+       // if user is beekeeper, inflate different layout
+        if (role == "Beekeeper") {
+            view = inflater.inflate(R.layout.fragment_home, container, false)
+        }
+        val main = (activity as MainActivity)
+        val searchedhive = main.searched_hive_name
+        val searchedhivelat = main.searched_hive_lat
+        val searchedhivelong = main.searched_hive_long
 
         // set timestamp format
         val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
@@ -142,36 +153,62 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 }
             }
         }
+        val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
+        val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
+        if(role == "Beekeeper"){
+
+            menu_view.setNavigationItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.nav_hives -> {
+                        val intent = Intent(requireContext(), Hives::class.java)
+                        startActivity(intent)
+                    }
+                    R.id.nav_profile -> {
+                        val intent = Intent(requireContext(), ProfileActivity::class.java)
+                        startActivity(intent)
+                    }
+                    R.id.nav_logout -> {
+                        StartActivity.api.Logout()
+                        val intent = Intent(requireContext(), StartActivity::class.java)
+                        startActivity(intent)
+                    }
+                }
+                menu_view.visibility = View.INVISIBLE
+                true
+            }
+
+
+
+            transparent_overlay.setOnClickListener {
+                menu_view.visibility = View.INVISIBLE
+                transparent_overlay.visibility = View.INVISIBLE
+            }
+        }
+        else{
+
+            menu_view.setNavigationItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.nav_profile -> {
+                        val intent = Intent(requireContext(), ProfileActivity::class.java)
+                        startActivity(intent)
+                    }
+                    R.id.nav_logout -> {
+                        StartActivity.api.Logout()
+                        val intent = Intent(requireContext(), StartActivity::class.java)
+                        startActivity(intent)
+                    }
+                }
+                menu_view.visibility = View.INVISIBLE
+                true
+            }
+
+            transparent_overlay.setOnClickListener {
+                menu_view.visibility = View.INVISIBLE
+                transparent_overlay.visibility = View.INVISIBLE
+            }
+        }
 
         // set up menu
-        val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
-        menu_view.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_hives -> {
-                    val intent = Intent(requireContext(), SignUp::class.java)
-                    startActivity(intent)
-                }
-                R.id.nav_profile -> {
-                    val intent = Intent(requireContext(), ProfileActivity::class.java)
-                    startActivity(intent)
-                }
-                R.id.nav_logout -> {
-                    StartActivity.api.Logout()
-                    val intent = Intent(requireContext(), StartActivity::class.java)
-                    startActivity(intent)
-                }
-            }
-            menu_view.visibility = View.INVISIBLE
-            true
-        }
-
-        val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
-
-        transparent_overlay.setOnClickListener {
-            menu_view.visibility = View.INVISIBLE
-            transparent_overlay.visibility = View.INVISIBLE
-        }
-
 
 
         if (checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -186,7 +223,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 Log.d(TAG, "Location permission granted")
                 fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
             }
-
 
         }
 
@@ -256,6 +292,9 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
         // onclick add swarm button
         btn_add.setOnClickListener {
+
+            addlostpoly(view, at = GeoPoint(searchedhivelat, searchedhivelong) , radius = 1000.0)
+            Log.d(TAG, "Latitude_sea: ${searchedhivelat}, Longitude: ${searchedhivelong}")
             //getCurrentLocation()
             // Camera permissions and take photo
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
@@ -284,8 +323,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
 
         }
-        // onclick maps button (changes to other fragment for now)
-        //btn_maps.setOnClickListener { Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_popupFragment) }
+        // onclick maps button
         btn_maps.setOnClickListener{
             val gmmIntentUri =
                 Uri.parse("google.navigation:q=48.30639,14.28611")
@@ -399,6 +437,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 val timestamp = view.findViewById<TextView>(R.id.txt_timestamp)
                 val status = view.findViewById<TextView>(R.id.txt_status)
                 val email = view.findViewById<TextView>(R.id.txt_email)
+
+
                 val btn_navigate = view.findViewById<Button>(R.id.btn_navigate)
                 val btn_collected = view.findViewById<Button>(R.id.btn_collected)
                 val btn_close = view.findViewById<Button>(R.id.btn_close)
@@ -429,10 +469,18 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 } else {
                     email.text = "Found by: \n ${user_email}"
                 }
+
+
                 when (marker.snippet) {
                     "Ready to be collected!" -> {
-                        btn_navigate.visibility = View.VISIBLE
-                        btn_collected.visibility = View.VISIBLE
+                        if (role == "Beekeeper") {
+                            btn_navigate.visibility = View.VISIBLE
+                            btn_collected.visibility = View.VISIBLE
+                        } else {
+                            btn_navigate.visibility = View.INVISIBLE
+                            btn_collected.visibility = View.INVISIBLE
+                        }
+
 
                         // set timestamp and initial status
                         timestamp.text = time
@@ -493,8 +541,14 @@ class HomeFragment : Fragment(), SensorEventListener  {
                         return true
                     }
                     "Beekeeper on the way!" -> {
-                        btn_navigate.visibility = View.INVISIBLE
-                        btn_collected.visibility = View.VISIBLE
+                        if (role == "Beekeeper") {
+                            btn_navigate.visibility = View.INVISIBLE
+                            btn_collected.visibility = View.VISIBLE
+                        } else {
+                            btn_navigate.visibility = View.INVISIBLE
+                            btn_collected.visibility = View.INVISIBLE
+                        }
+
 
                         // set timestamp and initial status
                         timestamp.text = time
@@ -507,6 +561,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                         return true
                     }
                 }
+
             }
         })
     }
