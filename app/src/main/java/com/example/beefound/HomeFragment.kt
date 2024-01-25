@@ -124,10 +124,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
         if (role == "Beekeeper") {
             view = inflater.inflate(R.layout.fragment_home, container, false)
         }
-        val main = (activity as MainActivity)
-        val searchedhive = main.searched_hive_name
-        val searchedhivelat = main.searched_hive_lat
-        val searchedhivelong = main.searched_hive_long
 
         // set timestamp format
         val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
