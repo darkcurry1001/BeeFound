@@ -11,13 +11,18 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
 import com.example.beefound.api.Api
+import com.example.beefound.databinding.ActivityLogInBinding
+import com.example.beefound.databinding.ActivitySignUpBinding
 import org.json.JSONObject
 
 
 class SignUp : Activity() {
+    private lateinit var binding: ActivitySignUpBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sign_up)
+        binding = ActivitySignUpBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val logIn = findViewById<TextView>(R.id.logIn)
         logIn.setOnClickListener {
@@ -34,6 +39,7 @@ class SignUp : Activity() {
         val user_role_beekeeper = findViewById<RadioButton>(R.id.beekeeper)
         val psw = findViewById<TextView>(R.id.password)
         val pswConfirm = findViewById<TextView>(R.id.confirmPassword)
+
 
 
         signUp.setOnClickListener {
@@ -75,8 +81,25 @@ class SignUp : Activity() {
             jsonObject.put("role", if (user_role_beekeeper.isChecked) "beekeeper" else "user")
             jsonObject.put("password", psw.text.toString())
 
-            val api = Api()
-            api.PostRequest("auth/signup/", jsonObject.toString()).start()
+            StartActivity.api.PostRequest("auth/signup/", jsonObject.toString(), fun (response: String){
+                runOnUiThread {
+                    kotlin.run {
+                        val jsonObject = JSONObject(response)
+                        val sessionT:String = jsonObject.get("session_token").toString()
+                        val refreshT = jsonObject.get("refresh_token").toString()
+
+                        Api.LocalStorageManager.saveStringToFile("sessionToken", sessionT)
+                        Api.LocalStorageManager.saveStringToFile("refreshToken", refreshT)
+
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)}
+                }}, fun (s: String){
+                    runOnUiThread {
+                        kotlin.run {
+                            Toast.makeText(this, "Signup Failed", Toast.LENGTH_SHORT).show()
+                        }
+                    }}
+            ).start()
         }
     }
 }

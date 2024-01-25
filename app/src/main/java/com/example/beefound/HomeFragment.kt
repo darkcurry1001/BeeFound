@@ -156,6 +156,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     startActivity(intent)
                 }
                 R.id.nav_logout -> {
+                    StartActivity.api.Logout()
                     val intent = Intent(requireContext(), StartActivity::class.java)
                     startActivity(intent)
                 }
