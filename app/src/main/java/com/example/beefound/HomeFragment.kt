@@ -32,9 +32,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-import com.example.beefound.api.Hive
-import com.example.beefound.api.Middleware
-import com.example.beefound.api.User
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -53,8 +50,6 @@ import java.lang.Math.cos
 import java.lang.Math.sin
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit

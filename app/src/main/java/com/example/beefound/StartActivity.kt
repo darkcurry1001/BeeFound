@@ -2,18 +2,13 @@ package com.example.beefound
 
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
-import com.example.beefound.R
 import com.example.beefound.api.Api
 import com.example.beefound.api.Middleware
 import com.example.beefound.api.User
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 class StartActivity : Activity() {
     companion object {
