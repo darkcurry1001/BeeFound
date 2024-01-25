@@ -1,10 +1,13 @@
 package com.example.beefound.api
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.asLiveData
 import android.widget.Toast
 import androidx.compose.material3.contentColorFor
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat.startActivity
 import com.example.beefound.StartActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
@@ -21,12 +24,17 @@ class Api {
     var SessionToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQzOTMzNDQsInJvbGUiOiJ1c2VyIiwidHlwZSI6InNlc3Npb24iLCJ1c2VyX2lkIjoxfQ.9s_Kg3HYD8qpkknEwGtHjoX-z_06cJtZu6XdY0a-Ck8"
     var RefreshToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQ5OTQ1NDQsInR5cGUiOiJyZWZyZXNoIiwidXNlcl9pZCI6MX0.TMauko0fWg6lVtoerDb6GRngvSOpQ7GaTcHa8ZE75kg"
 
+    lateinit var context: Context
+    var refreshCallback: ()->Unit = fun(){}
+
     companion object{
         lateinit var LocalStorageManager: LocalStorageManager
     }
 
-    constructor(context: Context){
+    constructor(context: Context, refreshCallback: ()->Unit){
+        this.context = context
         LocalStorageManager = LocalStorageManager(context)
+        this.refreshCallback = refreshCallback
 
         SessionToken = LocalStorageManager.readStringFromFile("sessionToken")
         RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
@@ -49,7 +57,7 @@ class Api {
 
 
 //    ToDo: handle returns (threads, saving tokens)
-    fun Request(url: String, body: String, method:String, token:String,
+    fun Request(url: String, body: String, method:String,
                 okCallback: (String) -> Unit = fun(_){}, errCallback: (String) -> Unit = fun(_){},):Thread{
         return Thread {
             val url = URL(BaseUrl + url)
@@ -106,19 +114,32 @@ class Api {
         }
     }
 
+    fun RefreshRequest(){
+        Request("auth/refresh", "", "GET",
+            fun(s:String){
+                val jsonObject = JSONObject(s)
+                Login(jsonObject.getString("session_token"),
+                    jsonObject.getString("refresh_token"))
+            },
+            fun(s:String){
+                Logout()
+                refreshCallback()
+            }).start()
+    }
+
     fun GetRequest(url: String, callback: (String) -> Unit, errorCallback: ()->Unit = fun(){}): Thread {
-        return Request(url, "", "GET", SessionToken, callback)
+        return Request(url, "", "GET", callback)
     }
 
     fun PostRequest(url: String, body: String, callback: (String) -> Unit, errorCallback: (String)->Unit = fun(_){}): Thread {
-        return Request(url, body, "POST", SessionToken, callback, errorCallback)
+        return Request(url, body, "POST", callback, errorCallback)
     }
 
     fun PutRequest(url: String, body: String, callback: (String) -> Unit, errorCallback: ()->Unit = fun(){}): Thread {
-        return Request(url, body, "PUT", SessionToken, callback)
+        return Request(url, body, "PUT", callback)
     }
 
     fun DeleteRequest(url: String, body: String, callback: (String) -> Unit, errorCallback: ()->Unit = fun(){}): Thread {
-        return Request(url, body, "DELETE", SessionToken, callback)
+        return Request(url, body, "DELETE", callback)
     }
 }
