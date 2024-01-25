@@ -31,8 +31,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
-import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import com.example.beefound.api.Hive
+import com.example.beefound.api.Middleware
+import com.example.beefound.api.User
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -49,8 +51,12 @@ import java.io.File
 import java.lang.Math.atan2
 import java.lang.Math.cos
 import java.lang.Math.sin
+import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class HomeFragment : Fragment(), SensorEventListener  {
@@ -99,6 +105,21 @@ class HomeFragment : Fragment(), SensorEventListener  {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // get user data from MainActivity
+        val main = (activity as MainActivity)
+        val userEmail = main.userEmail
+        val userId = main.userId
+        val userName = main.userName
+        val userPhone = main.userPhone
+        val userRole = main.userRole
+
+        // get hive data from MainActivity
+        val hivesFound = main.hives_Found
+        val hivesNavigated = main.hives_Navigated
+        val hivesSaved = main.hives_Saved
+        val hivesSearched = main.hives_Searched
+        Log.d("test", "hives: $hivesFound")
+
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
@@ -222,15 +243,23 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val startPoint = GeoPoint(latitude_glob, longitude_glob)            // show user location initially
         mapController.setCenter(startPoint)
 
-        // add markers (random for now)
-        addmarker(view , longitude = 48.8583, latitude = 2.2944, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        addmarker(view , longitude = 2.28611, latitude = 48.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        //addmarker(view , longitude = 2.2944, latitude = 48.8583, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        addmarker(view , longitude = 2.28611, latitude = 30.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
-        addmarker(view , longitude = 22.28611, latitude = 48.30639, header = "title", snippet = "my text", time = sdf.format(Date()), user_email = "max.mustermann@gmail.com")
+        // add markers of found hives
+        for (hive in hivesFound){
+            Log.d("test", "hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "my text", time = reformatDateTime(hive.created), user_email = hive.id.toString())
+        }
 
-        addlostpoly(view, at = GeoPoint(latitude_glob, longitude_glob) , radius = 1000.0) // add lost swarms (random for now)
+        // add markers of navigated hives
+        for (hive in hivesNavigated){
+            Log.d("test", "hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "my text", time = reformatDateTime(hive.created), user_email = hive.id.toString())
+        }
 
+        // add polys of searched hives
+        for (hive in hivesSearched){
+            Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0) // add lost swarms (random for now)
+        }
 
         btn_menu.setOnClickListener {
             menu_view.visibility = View.VISIBLE
@@ -264,7 +293,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
             val currentDateAndTime = sdf.format(Date())
 
             // open confirmation to add marker
-            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = "max.mustermann_der_neue@gmail.com")
+            markerConfirmation(view , longitude = longitude_glob, latitude = latitude_glob, header = "", snippet = "", time = sdf.format(Date()), user_email = userEmail)
 
         }
         // onclick maps button (changes to other fragment for now)
@@ -583,6 +612,20 @@ class HomeFragment : Fragment(), SensorEventListener  {
                         }
                     }
                 })
+    }
+
+    fun reformatDateTime(originalDateTime: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS", Locale.US)
+        val outputFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.US)
+
+        try {
+            val parsedDate = inputFormat.parse(originalDateTime)
+            return outputFormat.format(parsedDate)
+        } catch (e: ParseException) {
+            // Handle the exception, e.g., log it or return an error string
+            e.printStackTrace()
+            return "Invalid Date"
+        }
     }
 
 }

@@ -18,6 +18,7 @@ import org.json.JSONObject
 class StartActivity : Activity() {
     companion object {
         lateinit var api: Api
+        lateinit var userGlob : User
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,13 +32,19 @@ class StartActivity : Activity() {
                 Middleware.getUser(fun(user: User) {
                     runOnUiThread {
                         kotlin.run {
-                            Log.d("test", "user: " + user.username)
+                            userGlob = user
+                            Log.d("test", "user: " + userGlob.username)
+                            val intent = Intent(this, MainActivity::class.java)
+                            intent.putExtra("id", userGlob.id)
+                            intent.putExtra("username", userGlob.username)
+                            intent.putExtra("email", userGlob.email)
+                            intent.putExtra("phone", userGlob.phone)
+                            intent.putExtra("user_role", userGlob.user_role)
+                            Toast.makeText(this, "Logged in", Toast.LENGTH_LONG).show()
+                            startActivity(intent)
                         }
                     }
                 }).start()
-                Toast.makeText(this, "Logged in", Toast.LENGTH_LONG).show()
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
             }).start()
 
         val signUpButton: Button = findViewById<Button>(R.id.signUpButton)
