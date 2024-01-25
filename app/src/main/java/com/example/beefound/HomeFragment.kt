@@ -255,7 +255,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         // add polys of searched hives
         for (hive in hivesSearched){
             Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0) // add lost swarms (random for now)
+            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0)
         }
 
         btn_menu.setOnClickListener {
