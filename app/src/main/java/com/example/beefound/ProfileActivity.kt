@@ -15,14 +15,14 @@ class ProfileActivity : Activity() {
         val save = findViewById<Button>(R.id.btn_save)
         save.setOnClickListener {
             // Start the SignUpActivity
-            val intent = Intent(this, HomeFragment::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
         val back = findViewById<TextView>(R.id.back)
         back.setOnClickListener {
-            // Start the SignUpActivity
-            val intent = Intent(this, HomeFragment::class.java)
+            // Back to home
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
     }
