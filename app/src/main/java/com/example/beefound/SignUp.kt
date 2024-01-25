@@ -93,7 +93,7 @@ class SignUp : Activity() {
 
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)}
-                }}, fun (s: String){
+                }}, fun (i:Int, s: String){
                     runOnUiThread {
                         kotlin.run {
                             Toast.makeText(this, "Signup Failed", Toast.LENGTH_SHORT).show()

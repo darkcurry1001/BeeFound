@@ -169,6 +169,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
             true
         }
 
+
+
         val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
 
         transparent_overlay.setOnClickListener {

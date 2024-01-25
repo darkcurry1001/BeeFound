@@ -20,28 +20,37 @@ class Api {
 //    var BaseUrl: String = "http://192.168.0.42:3000/api/"
     var BaseUrl: String = "http://skeller.at:3000/api/"
 
-    var SessionToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQzOTMzNDQsInJvbGUiOiJ1c2VyIiwidHlwZSI6InNlc3Npb24iLCJ1c2VyX2lkIjoxfQ.9s_Kg3HYD8qpkknEwGtHjoX-z_06cJtZu6XdY0a-Ck8"
-    var RefreshToken: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQ5OTQ1NDQsInR5cGUiOiJyZWZyZXNoIiwidXNlcl9pZCI6MX0.TMauko0fWg6lVtoerDb6GRngvSOpQ7GaTcHa8ZE75kg"
 
-    companion object{
+    var SessionToken: String = ""
+    var RefreshToken: String = ""
+
+    lateinit var context: Context
+    var refreshOkCallback: () -> Unit = fun() {}
+    var refreshErrCallback: () -> Unit = fun() {}
+
+    companion object {
         lateinit var LocalStorageManager: LocalStorageManager
     }
 
-    constructor(context: Context){
+    constructor(context: Context, refreshOkCallback: () -> Unit, refreshErrCallback: () -> Unit) {
+        this.context = context
         LocalStorageManager = LocalStorageManager(context)
+        this.refreshOkCallback = refreshOkCallback
+        this.refreshErrCallback = refreshErrCallback
 
         SessionToken = LocalStorageManager.readStringFromFile("sessionToken")
         RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
     }
 
     fun Login(sT: String, rT: String){
+
         SessionToken = sT
         RefreshToken = rT
         LocalStorageManager.saveStringToFile("sessionToken", sT)
         LocalStorageManager.saveStringToFile("refreshToken", rT)
     }
 
-    fun Logout(){
+    fun Logout() {
         SessionToken = ""
         RefreshToken = ""
         LocalStorageManager.saveStringToFile("sessionToken", "")
@@ -49,17 +58,20 @@ class Api {
     }
 
 
-//    ToDo: handle returns (threads, saving tokens)
-    fun Request(url: String, body: String, method:String, token:String,
-                okCallback: (String) -> Unit = fun(_){}, errCallback: (String) -> Unit = fun(_){},):Thread{
+    //    ToDo: handle returns (threads, saving tokens)
+    fun Request(
+        urlString: String, body: String, method: String, token: String = SessionToken,
+        okCallback: (String) -> Unit = fun(_) {},
+        errCallback: (Int, String) -> Unit = fun(_, _) {}
+    ): Thread {
         return Thread {
-            val url = URL(BaseUrl + url)
+            val url = URL(BaseUrl + urlString)
             Log.d("test", "url: " + url)
             Log.d("test", "body: " + body)
             try {
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method
-                connection.setRequestProperty("Token", SessionToken)
+                connection.setRequestProperty("Token", token)
                 connection.setRequestProperty(
                     "Content-Type",
                     "application/json"
@@ -70,7 +82,7 @@ class Api {
                 ) // The format of response we want to get from the server
 
                 // Send the JSON we created
-                if (body != ""){
+                if (body != "") {
                     connection.doOutput = true
                     connection.doInput = true
                     val outputStreamWriter = OutputStreamWriter(connection.outputStream)
@@ -88,16 +100,16 @@ class Api {
                     val response = inputStreamReader.readText()
                     Log.d("test", response)
                     okCallback(response)
-                }else if(connection.responseCode == 401){
-//                    Request("auth/refresh", "", "GET", RefreshToken, fun(s:String){}).start()
-                    //ToDo: refresh token
-                    Log.d("test", "response 401")
                 } else {
-                    Log.d("test", "response !!NOT!! ok")
-                    val errorSystem = connection.errorStream
-                    val errorStreamReader = InputStreamReader(errorSystem, "UTF-8")
-
-                    Log.d("test", errorStreamReader.readText())
+                    if (connection.responseCode == 401) {
+                        if (RefreshToken != token) {
+                            RefreshRequest(urlString, body, method, okCallback, errCallback)
+                        }
+                        Log.d("test", "response 401")
+                    } else {
+                        Log.d("test", "response !!NOT!! ok")
+                    }
+                    errCallback(connection.responseCode, connection.responseMessage)
                 }
             } catch (e: Exception) {
                 Log.d("test", "Exception err:" + e.message)
@@ -107,19 +119,58 @@ class Api {
         }
     }
 
-    fun GetRequest(url: String, callback: (String) -> Unit, errorCallback: ()->Unit = fun(){}): Thread {
-        return Request(url, "", "GET", SessionToken, callback)
+    fun RefreshRequest(url: String, body: String, method: String,
+                       okCallback: (String) -> Unit = fun(_) {},
+                       errCallback: (Int, String) -> Unit = fun(_, _) {}) {
+        Log.d("test", "refresh request")
+        Request("auth/refresh", "", "GET", RefreshToken,
+            fun(s: String) {
+                val jsonObject = JSONObject(s)
+                Login(
+                    jsonObject.getString("session_token"),
+                    jsonObject.getString("refresh_token")
+                )
+                Request(url, body, method,
+                    okCallback=okCallback, errCallback=errCallback).start()
+            },
+            fun(code: Int, s: String) {
+                Logout()
+                refreshErrCallback()
+            }).start()
     }
 
-    fun PostRequest(url: String, body: String, callback: (String) -> Unit, errorCallback: (String)->Unit = fun(_){}): Thread {
-        return Request(url, body, "POST", SessionToken, callback, errorCallback)
+    fun GetRequest(
+        url: String,
+        callback: (String) -> Unit,
+        errorCallback: (Int, String) -> Unit = fun(_, _) {}
+    ): Thread {
+        return Request(url, "", "GET", okCallback = callback, errCallback = errorCallback)
     }
 
-    fun PutRequest(url: String, body: String, callback: (String) -> Unit, errorCallback: ()->Unit = fun(){}): Thread {
-        return Request(url, body, "PUT", SessionToken, callback)
+    fun PostRequest(
+        url: String,
+        body: String,
+        callback: (String) -> Unit,
+        errorCallback: (Int, String) -> Unit = fun(_, _) {}
+    ): Thread {
+        return Request(url, body, "POST", okCallback = callback, errCallback = errorCallback)
     }
 
-    fun DeleteRequest(url: String, body: String, callback: (String) -> Unit, errorCallback: ()->Unit = fun(){}): Thread {
-        return Request(url, body, "DELETE", SessionToken, callback)
+    fun PutRequest(
+        url: String,
+        body: String,
+        callback: (String) -> Unit,
+        errorCallback: (Int, String) -> Unit = fun(_, _) {}
+    ): Thread {
+        return Request(url, body, "PUT", okCallback = callback, errCallback = errorCallback)
+    }
+
+    fun DeleteRequest(
+        url: String,
+        body: String,
+        callback: (String) -> Unit,
+        errorCallback: (Int, String) -> Unit = fun(_, _) {}
+    ): Thread {
+        return Request(url, body, "DELETE", okCallback = callback, errCallback = errorCallback)
     }
 }

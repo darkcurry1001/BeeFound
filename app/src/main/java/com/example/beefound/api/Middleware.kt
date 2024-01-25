@@ -22,6 +22,7 @@ class Middleware {
         })
     }
 
+
     companion object {
         fun getUser(callback: (user: User)->Unit): Thread{
             return StartActivity.api.GetRequest("user/", fun (response: String){
@@ -153,5 +154,4 @@ class Middleware {
             })
         }
     }
-
 }
