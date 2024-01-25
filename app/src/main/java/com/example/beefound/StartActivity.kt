@@ -26,23 +26,19 @@ class StartActivity : Activity() {
 
         api = Api(this)
 
-        api.GetRequest("auth/test/", fun (response: String){
-            runOnUiThread {
-                kotlin.run {
-                    Middleware.getUser(fun (user: User){
-                        runOnUiThread {
-                            kotlin.run {
-                                Log.d("test", "user: " + user.username)
-                            }
+        api.GetRequest("auth/test/",
+            fun(response: String) {
+                Middleware.getUser(fun(user: User) {
+                    runOnUiThread {
+                        kotlin.run {
+                            Log.d("test", "user: " + user.username)
                         }
-                    })
-
-                        Toast.makeText(this, "Logged in", Toast.LENGTH_LONG).show()
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
                     }
-            }
-        }).start()
+                }).start()
+                Toast.makeText(this, "Logged in", Toast.LENGTH_LONG).show()
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+            }).start()
 
         val signUpButton: Button = findViewById<Button>(R.id.signUpButton)
         signUpButton.setOnClickListener {
