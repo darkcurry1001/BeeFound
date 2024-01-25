@@ -3,11 +3,9 @@ package com.example.beefound.api
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.asLiveData
 import android.widget.Toast
 import androidx.compose.material3.contentColorFor
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat.startActivity
+import com.example.beefound.MainActivity
 import com.example.beefound.StartActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
@@ -19,8 +17,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class Api {
-    var BaseUrl: String = "http://skeller.at:3000/api/"
 //    var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    var BaseUrl: String = "http://skeller.at:3000/api/"
+
 
     var SessionToken: String = ""
     var RefreshToken: String = ""
@@ -43,8 +42,8 @@ class Api {
         RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
     }
 
+    fun Login(sT: String, rT: String){
 
-    fun Login(sT: String, rT: String) {
         SessionToken = sT
         RefreshToken = rT
         LocalStorageManager.saveStringToFile("sessionToken", sT)
