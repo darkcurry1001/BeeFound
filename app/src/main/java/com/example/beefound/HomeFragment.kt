@@ -59,7 +59,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class HomeFragment : Fragment(), SensorEventListener  {
-    val role: String = "Beekeeper"
+    lateinit var role: String
     // TODO: Rename and change types of parameters
 
     private val CAMERA_REQUEST_CODE = 4711
@@ -111,7 +111,9 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val userId = main.userId
         val userName = main.userName
         val userPhone = main.userPhone
-        val userRole = main.userRole
+        role = main.userRole
+
+        Log.d("test", "user: $userName, $userEmail, $userPhone, $role")
 
         // get hive data from MainActivity
         val hivesFound = main.hives_Found
@@ -124,7 +126,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         var view = inflater.inflate(R.layout.fragment_home_regular_user, container, false)
 
        // if user is beekeeper, inflate different layout
-        if (role == "Beekeeper") {
+        if (role == "beekeeper") {
             view = inflater.inflate(R.layout.fragment_home, container, false)
         }
 
@@ -154,7 +156,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
 
         val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
-        if(role == "Beekeeper"){
+        if(role == "beekeeper"){
 
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
@@ -296,14 +298,14 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
         // add markers of found hives
         for (hive in hivesFound){
-            Log.d("test", "hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "my text", time = reformatDateTime(hive.created), user_email = hive.id.toString())
+            Log.d("test", "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Ready to be collected!", time = reformatDateTime(hive.created), user_email = hive.id.toString(), marker_id = hive.id)
         }
 
         // add markers of navigated hives
         for (hive in hivesNavigated){
-            Log.d("test", "hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "my text", time = reformatDateTime(hive.created), user_email = hive.id.toString())
+            Log.d("test", "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Other beekeeper on the way!", time = reformatDateTime(hive.created), user_email = hive.id.toString(), marker_id = hive.id)
         }
 
         // add polys of searched hives
@@ -475,14 +477,15 @@ class HomeFragment : Fragment(), SensorEventListener  {
         header: String,
         snippet: String,
         time: String,
-        user_email: String
+        user_email: String,
+        marker_id: Int,
     ) {
         val map = view.findViewById<MapView>(R.id.map)
         val marker = Marker(map)
         marker.position = GeoPoint(latitude, longitude) // Set the position for the marker
         //marker.isInfoWindowShown // Show the info window
         //marker.title = "Marker Title"
-        marker.snippet = "Ready to be collected!"
+        marker.snippet = snippet
         marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
         map.overlays?.add(marker)
         map.invalidate()
@@ -536,7 +539,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
                 when (marker.snippet) {
                     "Ready to be collected!" -> {
-                        if (role == "Beekeeper") {
+                        if (role == "beekeeper") {
                             btn_navigate.visibility = View.VISIBLE
                             btn_collected.visibility = View.VISIBLE
                         } else {
@@ -568,12 +571,17 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             map.overlays?.remove(marker)
                             map.invalidate()
 
-                            //todo StartActivity.api.DeleteRequest()
+                            Log.d("test", "try del")
+                            StartActivity.api.DeleteRequest("/hive?id=$marker_id", "", fun(response: String) {
+                                Log.d("test", "deleted hive")
+                            }, fun(i:Int, response: String) {
+                                Log.d("test", "error deleting hive")
+                            })
                         }
 
 
                         btn_navigate.setOnClickListener {
-                            marker.snippet = "Beekeeper on the way!"
+                            marker.snippet = "beekeeper on the way!"
                             status.text = marker.snippet
                             btn_navigate.visibility = View.INVISIBLE
                             marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
@@ -605,7 +613,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     }
 
                     "Beekeeper on the way!" -> {
-                        if (role == "Beekeeper") {
+                        if (role == "beekeeper") {
                             btn_navigate.visibility = View.INVISIBLE
                             btn_collected.visibility = View.VISIBLE
                         } else {
@@ -613,9 +621,25 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_collected.visibility = View.INVISIBLE
                         }
 
+                        marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
+                        map.invalidate()
 
                         // set timestamp and initial status
                         timestamp.text = time
+                        status.text = marker.snippet
+
+                        return true
+                    }
+
+                    "Other beekeeper on the way!" -> {
+                        if (role == "beekeeper") {
+                            btn_navigate.visibility = View.INVISIBLE
+                            btn_collected.visibility = View.INVISIBLE
+                        } else {
+                            btn_navigate.visibility = View.INVISIBLE
+                            btn_collected.visibility = View.INVISIBLE
+                        }
+
                         status.text = marker.snippet
 
                         return true
@@ -629,6 +653,12 @@ class HomeFragment : Fragment(), SensorEventListener  {
 
             }
         })
+
+        if (snippet == "Other beekeeper on the way!") {
+            marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
+            marker.snippet = "Other beekeeper on the way!"
+            map.invalidate()
+        }
     }
 
     fun markerConfirmation(
@@ -666,7 +696,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             header = "",
                             snippet = "",
                             time = sdf.format(Date()),
-                            user_email = user_email
+                            user_email = user_email,
+                            marker_id = 0, //todo change
                         )
                     }
                 }).start()
