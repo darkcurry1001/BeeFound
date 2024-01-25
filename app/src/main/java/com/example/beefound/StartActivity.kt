@@ -22,7 +22,17 @@ class StartActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
 
-        api = Api(this, fun(){
+        api = Api(this,
+            refreshOkCallback = fun (){
+                runOnUiThread {
+                    kotlin.run {
+                        Toast.makeText(this, "Refreshed", Toast.LENGTH_LONG).show()
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                    }
+                }
+            },
+            refreshErrCallback = fun (){
             runOnUiThread {
                 kotlin.run {
                     Toast.makeText(this, "Session expired", Toast.LENGTH_LONG).show()

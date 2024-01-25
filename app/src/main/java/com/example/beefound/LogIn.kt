@@ -29,23 +29,25 @@ class LogIn : Activity() {
             StartActivity.api.PostRequest("auth/login/",
                 "{\"username\": \"${findViewById<TextView>(R.id.username).text}\"," +
                         "\"password\": \"${findViewById<TextView>(R.id.password).text}\"}",
-                fun (response: String){
-                runOnUiThread {
-                    kotlin.run {
-                        var json = JSONObject(response)
-                        Log.d("test", "sessionToken: " + json.get("session_token"))
-                        StartActivity.api.Login(
-                                json.getString("session_token"),
-                                json.getString("refresh_token"))
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                    }
-                }
-            },
-                fun (response: String){
+                fun(response: String) {
                     runOnUiThread {
                         kotlin.run {
-                            Toast.makeText(this, "Wrong username or password", Toast.LENGTH_LONG).show()
+                            var json = JSONObject(response)
+                            Log.d("test", "sessionToken: " + json.get("session_token"))
+                            StartActivity.api.Login(
+                                json.getString("session_token"),
+                                json.getString("refresh_token")
+                            )
+                            val intent = Intent(this, MainActivity::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                },
+                fun(i:Int, response: String) {
+                    runOnUiThread {
+                        kotlin.run {
+                            Toast.makeText(this, "Wrong username or password", Toast.LENGTH_LONG)
+                                .show()
                         }
                     }
                 }).start()
