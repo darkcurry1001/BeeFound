@@ -463,10 +463,10 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_close.visibility = View.INVISIBLE
                             btn_add.visibility = View.VISIBLE
 
-
-                            //marker.snippet = "Collected!"
                             map.overlays?.remove(marker)
                             map.invalidate()
+
+                            //todo StartActivity.api.PostRequest()
                         }
 
 
