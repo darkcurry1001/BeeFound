@@ -77,6 +77,9 @@ class SignUp : Activity() {
 
             val api = Api()
             api.PostRequest("auth/signup/", jsonObject.toString()).start()
+
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
         }
     }
 }
