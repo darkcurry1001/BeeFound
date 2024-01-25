@@ -134,24 +134,5 @@ class Middleware {
                 callback(hivesFound, hivesNavigated, hivesSaved, hivesSearched)
             })
         }
-
-        fun addHive(callback: (user: User)->Unit): Thread{
-            return StartActivity.api.GetRequest("user/", fun (response: String){
-                val jsonObject = JSONObject(response)
-                val userJson = jsonObject.getJSONObject("user")
-                val user = User(
-                    userJson.getInt("id"),
-                    userJson.getString("username"),
-                    userJson.getString("email"),
-                    try {
-                        userJson.getString("phone")
-                    } catch (e: Exception) {
-                        ""
-                    },
-                    userJson.getString("role")
-                )
-                callback(user)
-            })
-        }
     }
 }
