@@ -93,6 +93,8 @@ class HomeFragment : Fragment(), SensorEventListener  {
     val orientationAngles = FloatArray(3)
     var rotation = 0.0
 
+    var currentlyNavigatingTo: Int = -1
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,6 +108,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         savedInstanceState: Bundle?
     ): View? {
         // get user data from MainActivity
+        // reference to MainActivity
         val main = (activity as MainActivity)
         val userEmail = main.userEmail
         val userId = main.userId
@@ -536,6 +539,88 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     email.text = "Found by: \n ${user_email}"
                 }
 
+                // set timestamp and initial status
+                timestamp.text = time
+                status.text = marker.snippet
+
+                // onclick for collected button
+                btn_collected.setOnClickListener {
+                    status.text = "Collected!"
+                    btn_collected.visibility = View.INVISIBLE
+                    btn_navigate.visibility = View.INVISIBLE
+
+                    btn_maps.visibility = View.INVISIBLE
+                    compass.visibility = View.INVISIBLE
+                    popup.visibility = View.INVISIBLE
+                    img_bees.visibility = View.INVISIBLE
+                    timestamp.visibility = View.INVISIBLE
+                    status.visibility = View.INVISIBLE
+                    email.visibility = View.INVISIBLE
+                    btn_close.visibility = View.INVISIBLE
+                    btn_add.visibility = View.VISIBLE
+
+                    map.overlays?.remove(marker)
+                    map.invalidate()
+
+                    // delete collected hive from data base
+                    StartActivity.api.DeleteRequest("hive?id=$marker_id", "", fun(response: String) {
+                        (activity as MainActivity).runOnUiThread {
+                            kotlin.run {
+                                Log.d("test", "deleted hive")
+                            }
+                        }
+                    }, fun(i:Int, response: String) {
+                        Log.d("test", "error deleting hive")
+                    }).start()
+                }
+
+
+                btn_navigate.setOnClickListener {
+                    if (currentlyNavigatingTo != -1) {
+                        Toast.makeText(activity as MainActivity,"alredy navigating to a hive", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    currentlyNavigatingTo = marker_id
+                    marker.snippet = "beekeeper on the way!"
+                    status.text = marker.snippet
+                    btn_navigate.visibility = View.INVISIBLE
+                    marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
+                    map.invalidate()
+
+                    btn_maps.visibility = View.VISIBLE
+                    compass.visibility = View.VISIBLE
+
+                    StartActivity.api.PutRequest(
+                        "hive/navigate?id=$marker_id",
+                        "",
+                        fun(response: String) {
+                            (activity as MainActivity).runOnUiThread {
+                                kotlin.run {
+                                    Log.d("test", "hive set navigate")
+                                }
+                            }
+                        },
+                        fun(i: Int, response: String) {
+                            Log.d("test", "error navigate hive")
+                        }).start()
+
+                    btn_maps.setOnClickListener {
+
+                        //get longitude and latitude of marker
+                        val latitude = marker.position.latitude
+                        val longitude = marker.position.longitude
+
+
+                        val gmmIntentUri =
+                            Uri.parse("google.navigation:q=$latitude,$longitude")
+                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                        mapIntent.setPackage("com.google.android.apps.maps")
+                        startActivity(mapIntent)
+                    }
+                    latitude_marker = latitude
+                    longitude_marker = longitude
+                }
+
 
                 when (marker.snippet) {
                     "Ready to be collected!" -> {
@@ -546,69 +631,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_navigate.visibility = View.INVISIBLE
                             btn_collected.visibility = View.INVISIBLE
                         }
-
-
-                        // set timestamp and initial status
-                        timestamp.text = time
-                        status.text = marker.snippet
-
-                        // onclick for collected button
-                        btn_collected.setOnClickListener {
-                            status.text = "Collected!"
-                            btn_collected.visibility = View.INVISIBLE
-                            btn_navigate.visibility = View.INVISIBLE
-
-                            btn_maps.visibility = View.INVISIBLE
-                            compass.visibility = View.INVISIBLE
-                            popup.visibility = View.INVISIBLE
-                            img_bees.visibility = View.INVISIBLE
-                            timestamp.visibility = View.INVISIBLE
-                            status.visibility = View.INVISIBLE
-                            email.visibility = View.INVISIBLE
-                            btn_close.visibility = View.INVISIBLE
-                            btn_add.visibility = View.VISIBLE
-
-                            map.overlays?.remove(marker)
-                            map.invalidate()
-
-                            Log.d("test", "try del")
-                            StartActivity.api.DeleteRequest("/hive?id=$marker_id", "", fun(response: String) {
-                                Log.d("test", "deleted hive")
-                            }, fun(i:Int, response: String) {
-                                Log.d("test", "error deleting hive")
-                            })
-                        }
-
-
-                        btn_navigate.setOnClickListener {
-                            marker.snippet = "beekeeper on the way!"
-                            status.text = marker.snippet
-                            btn_navigate.visibility = View.INVISIBLE
-                            marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
-                            map.invalidate()
-
-                            btn_maps.visibility = View.VISIBLE
-                            compass.visibility = View.VISIBLE
-
-                            btn_maps.setOnClickListener {
-
-                                //get longitude and latitude of marker
-                                val latitude = marker.position.latitude
-                                val longitude = marker.position.longitude
-
-
-                                val gmmIntentUri =
-                                    Uri.parse("google.navigation:q=$latitude,$longitude")
-                                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                                mapIntent.setPackage("com.google.android.apps.maps")
-                                startActivity(mapIntent)
-                            }
-                            latitude_marker = latitude
-                            longitude_marker = longitude
-
-
-                        }
-
                         return true
                     }
 
@@ -634,7 +656,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     "Other beekeeper on the way!" -> {
                         if (role == "beekeeper") {
                             btn_navigate.visibility = View.INVISIBLE
-                            btn_collected.visibility = View.INVISIBLE
+                            btn_collected.visibility = View.VISIBLE
                         } else {
                             btn_navigate.visibility = View.INVISIBLE
                             btn_collected.visibility = View.INVISIBLE
@@ -694,7 +716,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             longitude = longitude_glob,
                             latitude = latitude_glob,
                             header = "",
-                            snippet = "",
+                            snippet = "Ready to be collected!",
                             time = sdf.format(Date()),
                             user_email = user_email,
                             marker_id = 0, //todo change
@@ -797,6 +819,24 @@ class HomeFragment : Fragment(), SensorEventListener  {
             e.printStackTrace()
             return "Invalid Date"
         }
+    }
+
+    //todo evtl. to onDestroy
+    override fun onStop() {
+        super.onStop()
+
+        Log.d("test", "onDestroy")
+
+        currentlyNavigatingTo = 0
+        StartActivity.api.PutRequest("hive/navigate?id=$currentlyNavigatingTo", "", fun(response: String) {
+            (activity as MainActivity).runOnUiThread {
+                kotlin.run {
+                    Log.d("test", "hive set navigate")
+                }
+            }
+        }, fun(i:Int, response: String) {
+            Log.d("test", "error navigate hive")
+        }).start()
     }
 }
 
