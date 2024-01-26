@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.Intent.getIntent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.graphics.BitmapFactory.decodeByteArray
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -18,6 +19,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.preference.PreferenceManager
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -631,7 +633,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_navigate.visibility = View.INVISIBLE
                             btn_collected.visibility = View.INVISIBLE
                         }
-                        return true
                     }
 
                     "Beekeeper on the way!" -> {
@@ -649,8 +650,6 @@ class HomeFragment : Fragment(), SensorEventListener  {
                         // set timestamp and initial status
                         timestamp.text = time
                         status.text = marker.snippet
-
-                        return true
                     }
 
                     "Other beekeeper on the way!" -> {
@@ -661,18 +660,27 @@ class HomeFragment : Fragment(), SensorEventListener  {
                             btn_navigate.visibility = View.INVISIBLE
                             btn_collected.visibility = View.INVISIBLE
                         }
-
                         status.text = marker.snippet
-
-                        return true
                     }
 
                     else -> {
                         // TODO: add for imker in the way
-                        return true
                     }
                 }
 
+                StartActivity.api.GetRequest("hive/img?id=$marker_id", fun(response: String) {
+                    (activity as MainActivity).runOnUiThread {
+                        kotlin.run {
+                            val decodedBytes = Base64.decode(response, Base64.DEFAULT)
+                            img_bees.setImageBitmap(BitmapFactory.decodeByteArray(decodedBytes,0, decodedBytes.size))
+                            Log.d("test", "get img" + response::class.java)
+                        }
+                    }
+                }, fun(i:Int, response: String) {
+                    Log.d("test", "error getting img")
+                }).start()
+
+                return true
             }
         })
 
