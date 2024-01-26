@@ -26,10 +26,9 @@ import java.net.URLEncoder
 import kotlin.reflect.typeOf
 
 class Api {
-  var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    //var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    var BaseUrl: String = "http://skeller.at:3000/api/"
 
-    //var BaseUrl: String = "http://skeller.at:3000/api/"
-  
     var SessionToken: String = ""
     var RefreshToken: String = ""
 
@@ -51,7 +50,7 @@ class Api {
         RefreshToken = LocalStorageManager.readStringFromFile("refreshToken")
     }
 
-    fun Login(sT: String, rT: String){
+    fun Login(sT: String, rT: String) {
 
         SessionToken = sT
         RefreshToken = rT
@@ -126,7 +125,7 @@ class Api {
 
 //                    Log.d("test", connection.contentType)
 //                    Log.d("test",((connection.contentType == "image/jpeg").toString()))
-                    if (connection.contentType == "image/jpeg" || connection.contentType == "image/png"){
+                    if (connection.contentType == "image/jpeg" || connection.contentType == "image/png") {
                         Log.d("test", "image get")
                         var response: Bitmap? = null
                         try {
@@ -147,7 +146,7 @@ class Api {
                                 e.printStackTrace()
                             }
                         }
-                    }else{
+                    } else {
                         Log.d("test", "string else clause")
                         var response: String
                         response = inputStreamReader.readText()
@@ -167,28 +166,32 @@ class Api {
                 }
             } catch (e: Exception) {
                 Log.d("test", "Exception err:" + e.message)
-            }finally {
+            } finally {
 
             }
             Log.d("test", "end")
         }
     }
 
-    fun RefreshRequest(url: String, body: String, method: String,
-                       okCallback: (String) -> Unit = fun(_) {},
-                       errCallback: (Int, String) -> Unit = fun(_, _) {}) {
+    fun RefreshRequest(
+        url: String, body: String, method: String,
+        okCallback: (String) -> Unit = fun(_) {},
+        errCallback: (Int, String) -> Unit = fun(_, _) {}
+    ) {
         Log.d("test", "refresh request")
         Request("auth/refresh", "", "GET", RefreshToken,
             okCallback = fun(s: String) {
-                    val jsonObject = JSONObject(s)
-                    Login(
-                        jsonObject.getString("session_token"),
-                        jsonObject.getString("refresh_token")
-                    )
-                    Request(url, body, method,
-                        okCallback=okCallback, errCallback=errCallback).start()
+                val jsonObject = JSONObject(s)
+                Login(
+                    jsonObject.getString("session_token"),
+                    jsonObject.getString("refresh_token")
+                )
+                Request(
+                    url, body, method,
+                    okCallback = okCallback, errCallback = errCallback
+                ).start()
             },
-            errCallback = fun (code: Int, s: String) {
+            errCallback = fun(code: Int, s: String) {
                 Logout()
                 refreshErrCallback()
             }).start()
@@ -200,8 +203,10 @@ class Api {
         imgCallback: (Bitmap?) -> Unit = fun(_) {},
         errorCallback: (Int, String) -> Unit = fun(_, _) {}, recieveType: String = "*/*"
     ): Thread {
-        return Request(url, "", "GET", okCallback = callback, imgCallback = imgCallback,
-            errCallback = errorCallback, recieveType = recieveType)
+        return Request(
+            url, "", "GET", okCallback = callback, imgCallback = imgCallback,
+            errCallback = errorCallback, recieveType = recieveType
+        )
     }
 
     fun PostRequest(
@@ -228,7 +233,8 @@ class Api {
         callback: (String) -> Unit,
         errorCallback: (Int, String) -> Unit = fun(_, _) {}
     ): Thread {
-        return Request(url, body, "DELETE", okCallback = callback, errCallback = errorCallback
+        return Request(
+            url, body, "DELETE", okCallback = callback, errCallback = errorCallback
         )
     }
 
@@ -300,13 +306,23 @@ class Api {
         }
     }
 
-    private fun addFormField(fieldName: String, value: String, boundary: String, outputStream: DataOutputStream) {
+    private fun addFormField(
+        fieldName: String,
+        value: String,
+        boundary: String,
+        outputStream: DataOutputStream
+    ) {
         outputStream.writeBytes("--$boundary\r\n")
         outputStream.writeBytes("Content-Disposition: form-data; name=\"$fieldName\"\r\n\r\n")
         outputStream.writeBytes(value + "\r\n")
     }
 
-    private fun addFilePart(fieldName: String, uploadFile: File, boundary: String, outputStream: DataOutputStream) {
+    private fun addFilePart(
+        fieldName: String,
+        uploadFile: File,
+        boundary: String,
+        outputStream: DataOutputStream
+    ) {
         outputStream.writeBytes("--$boundary\r\n")
         outputStream.writeBytes("Content-Disposition: form-data; name=\"$fieldName\"; filename=\"${uploadFile.name}\"\r\n")
         outputStream.writeBytes("Content-Type: application/octet-stream\r\n\r\n")

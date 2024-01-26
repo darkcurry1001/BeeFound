@@ -728,18 +728,13 @@ class HomeFragment : Fragment(), SensorEventListener {
                     )
                     requireActivity().runOnUiThread {
                         Log.d("test", "FileSend UI update")
-                        addmarker(
-                            view,
-                            longitude = longitude_glob,
-                            latitude = latitude_glob,
-                            header = "",
-                            snippet = "Ready to be collected!",
-                            time = sdf.format(Date()),
-                            user_email = user_email,
-                            marker_id = 0, //todo change
-                        )
                     }
                 }).start()
+
+                Log.d("test", "restart loop")
+                stopRepeatingTask()
+                startRepeatingTask()
+                fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dipslayedIds)
 
             }
             .setNegativeButton("No") { dialog, which ->
@@ -840,7 +835,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     // define update loop for hives
     val handler = Handler()
-    val delayMillis: Long = 1000*10 // 10 seconds
+    val delayMillis: Long = 1000 // 10 seconds
     val runnable: Runnable = object : Runnable {
         override fun run() {
             // Your code to be executed repeatedly
