@@ -17,4 +17,5 @@ data class Hive(
     val userid : Int,
     val type : String,
     var name :String = "",
+    val email: String,
 )
