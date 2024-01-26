@@ -200,6 +200,12 @@ class HomeFragment : Fragment(), SensorEventListener {
                 when (menuItem.itemId) {
                     R.id.nav_hives -> {
                         val intent = Intent(requireContext(), Hives::class.java)
+                        /*
+                        intent.putExtra("id", userId)
+                        intent.putExtra("username", userName)
+                        intent.putExtra("email", userEmail)
+                        intent.putExtra("phone", userPhone)
+                        intent.putExtra("user_role", role)*/
                         startActivity(intent)
                     }
                     R.id.nav_profile -> {
@@ -322,6 +328,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)                                   // enable 2 finger zoom
+
         map.setBuiltInZoomControls(false)                                 // disable zoom buttons                                   // set initial zoom level 15
 
         // add markers of found hives
