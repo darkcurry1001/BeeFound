@@ -164,6 +164,8 @@ class HomeFragment : Fragment(), SensorEventListener {
         // get map
         val map = view1.findViewById<MapView>(R.id.map)
         val mapController = map.controller
+        val positionMarker = Marker(map)
+        map.overlays?.add(positionMarker)
         mapController.setZoom(15)
         var locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
@@ -183,11 +185,14 @@ class HomeFragment : Fragment(), SensorEventListener {
                             kotlin.run {
                                 Log.d("startCenter", "startPoint: $startPoint")
                                 mapController.setCenter(startPoint)
+                                mapController.animateTo(startPoint)
                             }
                         }
                     }
                     loc_updated = true
                     Log.d("startCenter", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+                    positionMarker.position = GeoPoint(location.latitude, location.longitude)
+                    map.invalidate()
                 }
             }
         }
