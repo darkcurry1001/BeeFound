@@ -166,6 +166,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         val mapController = map.controller
         val positionMarker = Marker(map)
         map.overlays?.add(positionMarker)
+        //marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
         mapController.setZoom(15)
         var locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
@@ -213,10 +214,6 @@ class HomeFragment : Fragment(), SensorEventListener {
                         intent.putExtra("user_role", role)*/
                         startActivity(intent)
                     }
-                    R.id.nav_profile -> {
-                        val intent = Intent(requireContext(), ProfileActivity::class.java)
-                        startActivity(intent)
-                    }
                     R.id.nav_logout -> {
                         StartActivity.api.Logout()
                         val intent = Intent(requireContext(), StartActivity::class.java)
@@ -235,10 +232,6 @@ class HomeFragment : Fragment(), SensorEventListener {
         else{
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
-                    R.id.nav_profile -> {
-                        val intent = Intent(requireContext(), ProfileActivity::class.java)
-                        startActivity(intent)
-                    }
                     R.id.nav_logout -> {
                         StartActivity.api.Logout()
                         val intent = Intent(requireContext(), StartActivity::class.java)
