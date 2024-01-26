@@ -366,15 +366,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                 Log.d(TAG, "Camera permission requested")
                 Toast.makeText(requireContext(), "Camera permission needed", Toast.LENGTH_SHORT)
                     .show()
-                // check if permission was granted and take picture (does not work yet)
-                if (checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.CAMERA
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    Log.d(TAG, "Camera permission granted")
-                    takePhoto()
-                }
+                return@setOnClickListener
             }
 
             // set timestamp for marker
