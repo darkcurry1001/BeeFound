@@ -99,7 +99,7 @@ class HomeFragment : Fragment(), SensorEventListener {
     var rotation = 0.0
 
     //hive info variables
-    var currentlyNavigatingTo: Int = -1
+    var currentlyNavigatingTo: Int = 0
 
     lateinit var hivesFound: MutableList<Hive>
     lateinit var hivesNavigated: MutableList<Hive>
@@ -542,6 +542,8 @@ class HomeFragment : Fragment(), SensorEventListener {
                 timestamp.text = time
                 status.text = marker.snippet
 
+                Log.d("test", "marker id: $marker_id, marker snippet: ${marker.snippet}, marker status: ${status.text}")
+
                 // onclick for collected button
                 btn_collected.setOnClickListener {
                     status.text = "Collected!"
@@ -579,7 +581,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
 
                 btn_navigate.setOnClickListener {
-                    if (currentlyNavigatingTo != -1) {
+                    if (currentlyNavigatingTo != 0) {
                         Toast.makeText(
                             activity as MainActivity,
                             "alredy navigating to a hive",
@@ -588,7 +590,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                         return@setOnClickListener
                     }
                     currentlyNavigatingTo = marker_id
-                    marker.snippet = "beekeeper on the way!"
+                    marker.snippet = "Beekeeper on the way!"
                     status.text = marker.snippet
                     btn_navigate.visibility = View.INVISIBLE
                     marker.icon = resources.getDrawable(R.drawable.bee_marker_gray, null)
@@ -642,6 +644,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
                     "Beekeeper on the way!" -> {
                         if (role == "beekeeper") {
+                            Log.d("test", "btn should show")
                             btn_navigate.visibility = View.INVISIBLE
                             btn_collected.visibility = View.VISIBLE
                         } else {
@@ -835,7 +838,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     // define update loop for hives
     val handler = Handler()
-    val delayMillis: Long = 1000 // 10 seconds
+    val delayMillis: Long = 1000_00 // 10 seconds
     val runnable: Runnable = object : Runnable {
         override fun run() {
             // Your code to be executed repeatedly
