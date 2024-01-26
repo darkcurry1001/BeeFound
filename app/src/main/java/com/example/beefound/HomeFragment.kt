@@ -166,7 +166,13 @@ class HomeFragment : Fragment(), SensorEventListener {
         val mapController = map.controller
         val positionMarker = Marker(map)
         map.overlays?.add(positionMarker)
-        //marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
+        //positionMarker.icon = resources.getDrawable(R.drawable.bee_marker, null)
+        positionMarker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
+            override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
+                return true
+            }
+        })
+
         mapController.setZoom(15)
         var locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
