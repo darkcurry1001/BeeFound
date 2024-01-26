@@ -6,8 +6,11 @@ import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.getIntent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BitmapFactory.decodeByteArray
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -18,6 +21,7 @@ import android.os.Handler
 import android.os.Looper
 import android.preference.PreferenceManager
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -57,7 +61,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class HomeFragment : Fragment(), SensorEventListener  {
+class HomeFragment : Fragment(), SensorEventListener {
     lateinit var role: String
     // TODO: Rename and change types of parameters
 
@@ -136,7 +140,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         // Inflate the layout for this fragment
         view1 = inflater.inflate(R.layout.fragment_home_regular_user, container, false)
 
-       // if user is beekeeper, inflate different layout
+        // if user is beekeeper, inflate different layout
         if (role == "beekeeper") {
             view1 = inflater.inflate(R.layout.fragment_home, container, false)
         }
@@ -558,21 +562,29 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     map.invalidate()
 
                     // delete collected hive from data base
-                    StartActivity.api.DeleteRequest("hive?id=$marker_id", "", fun(response: String) {
-                        (activity as MainActivity).runOnUiThread {
-                            kotlin.run {
-                                Log.d("test", "deleted hive")
+                    StartActivity.api.DeleteRequest(
+                        "hive?id=$marker_id",
+                        "",
+                        fun(response: String) {
+                            (activity as MainActivity).runOnUiThread {
+                                kotlin.run {
+                                    Log.d("test", "deleted hive")
+                                }
                             }
-                        }
-                    }, fun(i:Int, response: String) {
-                        Log.d("test", "error deleting hive")
-                    }).start()
+                        },
+                        fun(i: Int, response: String) {
+                            Log.d("test", "error deleting hive")
+                        }).start()
                 }
 
 
                 btn_navigate.setOnClickListener {
                     if (currentlyNavigatingTo != -1) {
-                        Toast.makeText(activity as MainActivity,"alredy navigating to a hive", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            activity as MainActivity,
+                            "alredy navigating to a hive",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         return@setOnClickListener
                     }
                     currentlyNavigatingTo = marker_id
@@ -661,17 +673,21 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     }
                 }
 
-                StartActivity.api.GetRequest("hive/img?id=$marker_id", fun(response: String) {
-                    (activity as MainActivity).runOnUiThread {
-                        kotlin.run {
-                            //val decodedBytes = Base64.decode(response.trim(), Base64.DEFAULT)
-                            //img_bees.setImageBitmap(BitmapFactory.decodeByteArray(decodedBytes,0, decodedBytes.size))
-                            Log.d("test", "get img" + response::class)
+                StartActivity.api.GetRequest("hive/img?id=$marker_id",
+                    imgCallback = fun(response: Bitmap?) {
+                        Log.d("test", "get img")
+                        (activity as MainActivity).runOnUiThread {
+                            kotlin.run {
+                                img_bees.setImageBitmap(response)
+//                            Log.d("test", response)
+//                            val decodedBytes = Base64.decode(response, Base64.DEFAULT)
+//                            img_bees.setImageBitmap(BitmapFactory.decodeByteArray(decodedBytes,0, decodedBytes.size))
+                            }
                         }
-                    }
-                }, fun(i:Int, response: String) {
-                    Log.d("test", "error getting img")
-                }).start()
+                    },
+                    errorCallback = fun(i: Int, response: String) {
+                        Log.d("test", "error getting img")
+                    }).start()
 
                 return true
             }
@@ -906,15 +922,19 @@ class HomeFragment : Fragment(), SensorEventListener  {
         stopRepeatingTask()
 
         currentlyNavigatingTo = 0
-        StartActivity.api.PutRequest("hive/navigate?id=$currentlyNavigatingTo", "", fun(response: String) {
-            (activity as MainActivity).runOnUiThread {
-                kotlin.run {
-                    Log.d("test", "hive set navigate")
+        StartActivity.api.PutRequest(
+            "hive/navigate?id=$currentlyNavigatingTo",
+            "",
+            fun(response: String) {
+                (activity as MainActivity).runOnUiThread {
+                    kotlin.run {
+                        Log.d("test", "hive set navigate")
+                    }
                 }
-            }
-        }, fun(i:Int, response: String) {
-            Log.d("test", "error navigate hive")
-        }).start()
+            },
+            fun(i: Int, response: String) {
+                Log.d("test", "error navigate hive")
+            }).start()
     }
 }
 

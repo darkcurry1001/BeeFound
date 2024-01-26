@@ -2,6 +2,8 @@ package com.example.beefound.api
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.material3.contentColorFor
@@ -15,16 +17,18 @@ import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import kotlin.reflect.typeOf
 
 class Api {
-  //var BaseUrl: String = "http://192.168.0.42:3000/api/"
+  var BaseUrl: String = "http://192.168.0.42:3000/api/"
 
-    var BaseUrl: String = "http://skeller.at:3000/api/"
+    //var BaseUrl: String = "http://skeller.at:3000/api/"
   
     var SessionToken: String = ""
     var RefreshToken: String = ""
@@ -62,11 +66,27 @@ class Api {
         LocalStorageManager.saveStringToFile("refreshToken", "")
     }
 
+    fun readImage(inputStream: InputStream): Bitmap? {
+        return try {
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        } finally {
+            try {
+                inputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 
     //    ToDo: handle returns (threads, saving tokens)
     fun Request(
         urlString: String, body: String, method: String, token: String = SessionToken,
         okCallback: (String) -> Unit = fun(_) {},
+        imgCallback: (Bitmap?) -> Unit = fun(_) {},
         errCallback: (Int, String) -> Unit = fun(_, _) {},
         sendType: String = "application/json", recieveType: String = "application/json"
     ): Thread {
@@ -104,9 +124,36 @@ class Api {
                     val inputSystem = connection.inputStream
                     val inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
 
-                    val response = inputStreamReader.readText()
-                    Log.d("test", response)
-                    okCallback(response)
+//                    Log.d("test", connection.contentType)
+//                    Log.d("test",((connection.contentType == "image/jpeg").toString()))
+                    if (connection.contentType == "image/jpeg" || connection.contentType == "image/png"){
+                        Log.d("test", "image get")
+                        var response: Bitmap? = null
+                        try {
+                            response = BitmapFactory.decodeStream(inputSystem)
+
+                            Log.d("test", "image get try")
+                        } catch (e: Exception) {
+
+                            Log.d("test", "image get error")
+                            e.printStackTrace()
+                        } finally {
+                            Log.d("test", "image get finally")
+                            imgCallback(response)
+                            Log.d("test", "image after callback")
+                            try {
+                                inputSystem.close()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }else{
+                        Log.d("test", "string else clause")
+                        var response: String
+                        response = inputStreamReader.readText()
+                        Log.d("test,response", response)
+                        okCallback(response)
+                    }
                 } else {
                     Log.d("test", "response !!NOT!! ok")
                     Log.d("test", InputStreamReader(connection.errorStream).readText())
@@ -120,8 +167,9 @@ class Api {
                 }
             } catch (e: Exception) {
                 Log.d("test", "Exception err:" + e.message)
-            }
+            }finally {
 
+            }
             Log.d("test", "end")
         }
     }
@@ -131,16 +179,16 @@ class Api {
                        errCallback: (Int, String) -> Unit = fun(_, _) {}) {
         Log.d("test", "refresh request")
         Request("auth/refresh", "", "GET", RefreshToken,
-            fun(s: String) {
-                val jsonObject = JSONObject(s)
-                Login(
-                    jsonObject.getString("session_token"),
-                    jsonObject.getString("refresh_token")
-                )
-                Request(url, body, method,
-                    okCallback=okCallback, errCallback=errCallback).start()
+            okCallback = fun(s: String) {
+                    val jsonObject = JSONObject(s)
+                    Login(
+                        jsonObject.getString("session_token"),
+                        jsonObject.getString("refresh_token")
+                    )
+                    Request(url, body, method,
+                        okCallback=okCallback, errCallback=errCallback).start()
             },
-            fun(code: Int, s: String) {
+            errCallback = fun (code: Int, s: String) {
                 Logout()
                 refreshErrCallback()
             }).start()
@@ -148,10 +196,12 @@ class Api {
 
     fun GetRequest(
         url: String,
-        callback: (String) -> Unit,
-        errorCallback: (Int, String) -> Unit = fun(_, _) {}
+        callback: (String) -> Unit = fun(_) {},
+        imgCallback: (Bitmap?) -> Unit = fun(_) {},
+        errorCallback: (Int, String) -> Unit = fun(_, _) {}, recieveType: String = "*/*"
     ): Thread {
-        return Request(url, "", "GET", okCallback = callback, errCallback = errorCallback)
+        return Request(url, "", "GET", okCallback = callback, imgCallback = imgCallback,
+            errCallback = errorCallback, recieveType = recieveType)
     }
 
     fun PostRequest(
@@ -236,7 +286,7 @@ class Api {
             } else {
                 // Handle error
                 if (connection.responseCode == 401) {
-                    RefreshRequest(serverUrl, jsonData, "POST", fun(s: String) {
+                    RefreshRequest(serverUrl, jsonData, "POST", fun(s: Any?) {
                         sendMultipartRequest(jsonData, imageFile, serverUrl)
                     })
                 }
