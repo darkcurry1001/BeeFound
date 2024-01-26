@@ -932,28 +932,38 @@ class HomeFragment : Fragment(), SensorEventListener {
     }
 
 
-    //todo evtl. to onDestroy
     override fun onStop() {
         super.onStop()
         Log.d("test", "onStop")
-
         //stop update loop
         stopRepeatingTask()
+    }
 
-        currentlyNavigatingTo = 0
-        StartActivity.api.PutRequest(
-            "hive/navigate?id=$currentlyNavigatingTo",
-            "",
-            fun(response: String) {
-                (activity as MainActivity).runOnUiThread {
-                    kotlin.run {
-                        Log.d("test", "hive set navigate")
+    override fun onDestroy() {
+        Log.d("test", "onStop")
+        try {
+            Log.d("test", "onStop")
+
+            //stop update loop
+            stopRepeatingTask()
+
+            currentlyNavigatingTo = 0
+            StartActivity.api.PutRequest(
+                "hive/navigate?id=$currentlyNavigatingTo",
+                "",
+                fun(response: String) {
+                    (activity as MainActivity).runOnUiThread {
+                        kotlin.run {
+                            Log.d("test", "hive set navigate")
+                        }
                     }
-                }
-            },
-            fun(i: Int, response: String) {
-                Log.d("test", "error navigate hive")
-            }).start()
+                },
+                fun(i: Int, response: String) {
+                    Log.d("test", "error navigate hive")
+                }).start()
+        } finally {
+            super.onDestroy()
+        }
     }
 }
 
