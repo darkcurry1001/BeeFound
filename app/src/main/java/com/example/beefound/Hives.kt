@@ -1,6 +1,7 @@
 package com.example.beefound
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
@@ -18,6 +19,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import com.example.beefound.api.Api
 import com.example.beefound.api.LocalStorageManager
 import com.example.beefound.api.Middleware
@@ -31,13 +33,16 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-//var hive_id_names : String =""
 class Hives : Activity() {
     var hiveList_names = ArrayList<String>()
     var hiveList = ArrayList<Hive>()
 
     var hiveList_names_searched = ArrayList<String>()
     var hiveList_searched = ArrayList<Hive>()
+
+    var locationRequest: LocationRequest? = null
+    var latitude_glob: Double? = 48.4458708
+    var longitude_glob: Double? = 14.5307493
 
 
 
@@ -46,15 +51,13 @@ class Hives : Activity() {
     lateinit var hives_Saved: List<com.example.beefound.api.Hive>
     lateinit var hives_Searched: List<com.example.beefound.api.Hive>
 
-   // var localStorageManager: LocalStorageManager = LocalStorageManager(this)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Middleware.getHives(fun(hivesFound: MutableList<com.example.beefound.api.Hive>, hivesNavigated: MutableList<com.example.beefound.api.Hive>, hivesSaved: MutableList<com.example.beefound.api.Hive>, hivesSearched: MutableList<com.example.beefound.api.Hive>){
+        Middleware.getHives(@SuppressLint("SuspiciousIndentation")
+        fun(hivesFound: MutableList<com.example.beefound.api.Hive>, hivesNavigated: MutableList<com.example.beefound.api.Hive>, hivesSaved: MutableList<com.example.beefound.api.Hive>, hivesSearched: MutableList<com.example.beefound.api.Hive>){
             runOnUiThread {
                 kotlin.run {
-                    //localStorageManager.saveStringToFile("hive_names", "")
                     Log.d("test", "gethives: ")
                     hives_Found = hivesFound
                     hives_Navigated = hivesNavigated
@@ -64,9 +67,6 @@ class Hives : Activity() {
 
                     Log.d("test", "hives_saved: $hives_Saved")
                     for (hive in hives_Saved){
-
-                            //var curr_hive_name = JSONObject(localStorageManager.readStringFromFile("hive_names")).getString("${hive.id}")
-                            //Log.d("test", "curr_hive_name: $curr_hive_name")
                             hiveList_names.add("ID:${hive.id} "+hive.name)
                             hiveList.add(Hive("${hive.name}", hive.id, hive.latitude.toDouble(), hive.longitude.toDouble()))
 
@@ -74,8 +74,6 @@ class Hives : Activity() {
 
                     }
                     for (hive in hives_Searched){
-
-                        //var curr_hive_name = JSONObject(localStorageManager.readStringFromFile("hive_names")).getString("${hive.id}")
                         hiveList_names_searched.add("ID:${hive.id} "+hive.name)
                         hiveList_searched.add(Hive("${hive.name}", hive.id, hive.latitude.toDouble(), hive.longitude.toDouble()))
                     }
@@ -84,9 +82,7 @@ class Hives : Activity() {
                     setContentView(R.layout.activity_hives)
 
                     lateinit var fusedLocationClient: FusedLocationProviderClient
-                    var locationRequest: LocationRequest? = null
-                    var latitude_glob: Double? = 48.3458708
-                    var longitude_glob: Double? = 14.5307493
+
                     // get location
                     fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
                     locationRequest = LocationRequest.create()
@@ -100,10 +96,29 @@ class Hives : Activity() {
                             for (location in locationResult.locations){
                                 latitude_glob = location.latitude
                                 longitude_glob = location.longitude
-                                Log.d(ContentValues.TAG, "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+                                Log.d(ContentValues.TAG, "Latitude: $latitude_glob, Longitude: $longitude_glob")
                             }
                         }
                     }
+
+
+                    if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+
+                        return@run
+                    }
+                    fusedLocationClient.requestLocationUpdates(
+                            locationRequest,
+                            locationCallback,
+                            Looper.getMainLooper()
+                    )
+
                     val addHive = findViewById<Button>(R.id.addHive)
 
                     val hivename = findViewById<TextView>(R.id.hivenametxt)
@@ -116,9 +131,6 @@ class Hives : Activity() {
                         if (hivename.text.toString() != "") {
                             // api call to add hive to saved list
                             var id = 0
-
-                            // write hive name to local storage
-
 
                             StartActivity.api.PostRequest("hive/save/",
                                 "{\"Latitude\":\"$latitude_glob\",\"Longitude\":\"$longitude_glob\",\"type\":\"saved\",\"name\":\"${hivename.text}\"}",
@@ -133,14 +145,7 @@ class Hives : Activity() {
 
                                             hiveList_names.add("ID:$id "+hivename.text.toString())
                                             hiveList.add(Hive(hivename.text.toString(), id, latitude_glob, longitude_glob))
-                                            /*
-                                            if (hive_id_names == "")
-                                                hive_id_names = "\"$id\""+":${hivename.text}"
-                                            else{
-                                                hive_id_names = hive_id_names +","+ "\"$id\""+":${hivename.text}"
-                                            }
 
-                                            localStorageManager.saveStringToFile("hive_names", "{"+hive_id_names+"}")*/
                                             adapter.notifyDataSetChanged()
                                         }
                                     }
@@ -154,15 +159,7 @@ class Hives : Activity() {
                                 }).start()
                         }
                     }
-                    if (ActivityCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        ) != PackageManager.PERMISSION_GRANTED
-                    )
-                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+
 
                     hivelv.setOnItemClickListener { parent, view, position, id ->
                         Log.d(ContentValues.TAG, "Name: ${hiveList[position].name} Latitude: ${hiveList[position].latitude}, Longitude: ${hiveList[position].longitude}")
@@ -192,8 +189,6 @@ class Hives : Activity() {
                                             }
                                         }
                                     }).start()
-
-
 
                             }
                             .setNegativeButton("Remove") { dialog, which ->
@@ -278,10 +273,13 @@ class Hives : Activity() {
 
     }
     override fun onBackPressed() {
-        // If you want to start a different activity when the back button is pressed,
-        // you can create an Intent for that activity and start it.
 
-        val intent = Intent(this, StartActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("id", StartActivity.userGlob.id)
+        intent.putExtra("username", StartActivity.userGlob.username)
+        intent.putExtra("email", StartActivity.userGlob.email)
+        intent.putExtra("phone", StartActivity.userGlob.phone)
+        intent.putExtra("user_role", StartActivity.userGlob.user_role)
         startActivity(intent)
 
         // Finish the current activity to remove it from the back stack

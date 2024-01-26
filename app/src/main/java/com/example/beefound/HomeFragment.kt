@@ -179,6 +179,12 @@ class HomeFragment : Fragment(), SensorEventListener {
                 when (menuItem.itemId) {
                     R.id.nav_hives -> {
                         val intent = Intent(requireContext(), Hives::class.java)
+                        /*
+                        intent.putExtra("id", userId)
+                        intent.putExtra("username", userName)
+                        intent.putExtra("email", userEmail)
+                        intent.putExtra("phone", userPhone)
+                        intent.putExtra("user_role", role)*/
                         startActivity(intent)
                     }
                     R.id.nav_profile -> {
@@ -310,7 +316,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         val mapController = map.controller
         mapController.setZoom(15)                                           // set initial zoom level 15
         val startPoint =
-            GeoPoint(latitude_glob, longitude_glob)            // show user location initially
+            GeoPoint(latitude_glob, longitude_glob)             // show user location initially
         mapController.setCenter(startPoint)
 
         // add markers of found hives
