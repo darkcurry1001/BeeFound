@@ -16,4 +16,5 @@ data class Hive(
     val latitude : String,
     val userid : Int,
     val type : String,
+    var name :String = "",
 )

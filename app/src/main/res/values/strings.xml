@@ -22,5 +22,6 @@
     <string name="picture_of_header">picture of header</string>
     <string name="hivestitle">Saved Hives</string>
     <string name="add_hive">Add Hive</string>
-    <string name="hive_name">Hive Name</string>
+    <string name="hive_name">New Hive Name</string>
+    <string name="searchedHives_text">Searched Hives</string>
 </resources>
