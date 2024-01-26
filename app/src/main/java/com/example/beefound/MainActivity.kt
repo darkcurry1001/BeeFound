@@ -34,10 +34,10 @@ class MainActivity : FragmentActivity()  {
     lateinit var userEmail: String
     lateinit var userPhone: String
     lateinit var userRole: String
-    lateinit var hives_Found: List<Hive>
-    lateinit var hives_Navigated: List<Hive>
-    lateinit var hives_Saved: List<Hive>
-    lateinit var hives_Searched: List<Hive>
+    lateinit var hives_Found: MutableList<Hive>
+    lateinit var hives_Navigated: MutableList<Hive>
+    lateinit var hives_Saved: MutableList<Hive>
+    lateinit var hives_Searched: MutableList<Hive>
 
     var userId: Int = 0
 
