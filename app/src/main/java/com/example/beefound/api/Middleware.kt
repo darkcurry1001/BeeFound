@@ -67,7 +67,8 @@ class Middleware {
                                 hiveJson.getString("Longitude"),
                                 hiveJson.getString("Latitude"),
                                 hiveJson.getInt("UserID"),
-                                hiveJson.getString("type")
+                                hiveJson.getString("type"),
+                                hiveJson.getJSONObject("User").getString("email")
                             )
                             hivesFound.add(hiveFound)
                             //callback(hiveFound)
@@ -86,7 +87,8 @@ class Middleware {
                                 hiveJson.getString("Longitude"),
                                 hiveJson.getString("Latitude"),
                                 hiveJson.getInt("UserID"),
-                                hiveJson.getString("type")
+                                hiveJson.getString("type"),
+                                hiveJson.getJSONObject("User").getString("email")
                             )
                             hivesNavigated.add(hiveNavigated)
                             //callback(hiveNavigated)
@@ -105,7 +107,8 @@ class Middleware {
                                 hiveJson.getString("Longitude"),
                                 hiveJson.getString("Latitude"),
                                 hiveJson.getInt("UserID"),
-                                hiveJson.getString("type")
+                                hiveJson.getString("type"),
+                                hiveJson.getJSONObject("User").getString("email")
                             )
                             hivesSaved.add(hiveSaved)
                             //callback(hiveSaved)
@@ -124,7 +127,8 @@ class Middleware {
                                 hiveJson.getString("Longitude"),
                                 hiveJson.getString("Latitude"),
                                 hiveJson.getInt("UserID"),
-                                hiveJson.getString("type")
+                                hiveJson.getString("type"),
+                                hiveJson.getJSONObject("User").getString("email")
                             )
                             hivesSearched.add(hiveSearched)
                             //callback(hiveSearched)

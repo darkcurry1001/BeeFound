@@ -302,13 +302,13 @@ class HomeFragment : Fragment(), SensorEventListener  {
         // add markers of found hives
         for (hive in hivesFound){
             Log.d("test", "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Ready to be collected!", time = reformatDateTime(hive.created), user_email = hive.id.toString(), marker_id = hive.id)
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Ready to be collected!", time = reformatDateTime(hive.created), user_email = hive.email, marker_id = hive.id)
         }
 
         // add markers of navigated hives
         for (hive in hivesNavigated){
             Log.d("test", "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Other beekeeper on the way!", time = reformatDateTime(hive.created), user_email = hive.id.toString(), marker_id = hive.id)
+            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Other beekeeper on the way!", time = reformatDateTime(hive.created), user_email = hive.email, marker_id = hive.id)
         }
 
         // add polys of searched hives
