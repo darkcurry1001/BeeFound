@@ -13,7 +13,7 @@
         android:id="@+id/hivestitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="20dp"
         android:text="@string/hivestitle"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -23,10 +23,11 @@
 
 
     <!-- Sign Up Button -->
+
     <Button
         android:id="@+id/addHive"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
+        android:layout_width="156dp"
+        android:layout_height="65dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/button_rounded_corners"
@@ -37,15 +38,17 @@
         android:textAllCaps="false"
         android:textColor="@color/black"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/searchedhivelist"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hivelist" />
+        app:layout_constraintTop_toBottomOf="@+id/hivelist"
+        app:layout_constraintVertical_bias="0.24" />
 
     <ListView
         android:id="@+id/hivelist"
         android:layout_width="409dp"
-        android:layout_height="350dp"
+        android:layout_height="200dp"
         android:layout_marginTop="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -53,15 +56,39 @@
 
     <EditText
         android:id="@+id/hivenametxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="170dp"
+        android:layout_height="46dp"
         android:ems="10"
         android:inputType="text"
         android:text="@string/hive_name"
-        app:layout_constraintBottom_toTopOf="@+id/addHive"
+        app:layout_constraintBottom_toTopOf="@+id/searchedhivelist"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.068"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hivelist"
+        app:layout_constraintVertical_bias="0.216" />
+
+    <ListView
+        android:id="@+id/searchedhivelist"
+        android:layout_width="409dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="284dp"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hivestitle"
+        app:layout_constraintVertical_bias="0.536" />
+
+    <TextView
+        android:id="@+id/SearchedHives_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/searchedHives_text"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/searchedhivelist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hivelist" />
+        app:layout_constraintTop_toBottomOf="@+id/addHive" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

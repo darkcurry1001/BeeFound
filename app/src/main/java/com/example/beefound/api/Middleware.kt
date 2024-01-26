@@ -108,6 +108,7 @@ class Middleware {
                                 hiveJson.getString("Latitude"),
                                 hiveJson.getInt("UserID"),
                                 hiveJson.getString("type"),
+                                hiveJson.getString("name")
                                 hiveJson.getJSONObject("User").getString("email")
                             )
                             hivesSaved.add(hiveSaved)
@@ -128,6 +129,7 @@ class Middleware {
                                 hiveJson.getString("Latitude"),
                                 hiveJson.getInt("UserID"),
                                 hiveJson.getString("type"),
+                                hiveJson.getString("name")
                                 hiveJson.getJSONObject("User").getString("email")
                             )
                             hivesSearched.add(hiveSearched)
