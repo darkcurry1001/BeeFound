@@ -60,7 +60,7 @@
         android:layout_height="46dp"
         android:ems="10"
         android:inputType="text"
-        android:text="@string/hive_name"
+        android:hint="@string/hive_name"
         app:layout_constraintBottom_toTopOf="@+id/searchedhivelist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.068"
