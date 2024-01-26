@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.getIntent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapFactory.decodeByteArray
 import android.hardware.Sensor
@@ -60,7 +61,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class HomeFragment : Fragment(), SensorEventListener  {
+class HomeFragment : Fragment(), SensorEventListener {
     lateinit var role: String
     // TODO: Rename and change types of parameters
 
@@ -130,7 +131,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         // Inflate the layout for this fragment
         var view = inflater.inflate(R.layout.fragment_home_regular_user, container, false)
 
-       // if user is beekeeper, inflate different layout
+        // if user is beekeeper, inflate different layout
         if (role == "beekeeper") {
             view = inflater.inflate(R.layout.fragment_home, container, false)
         }
@@ -161,7 +162,7 @@ class HomeFragment : Fragment(), SensorEventListener  {
         val menu_view = view.findViewById<NavigationView>(R.id.nav_view)
 
         val transparent_overlay = view.findViewById<View>(R.id.transparent_overlay)
-        if(role == "beekeeper"){
+        if (role == "beekeeper") {
 
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
@@ -169,10 +170,12 @@ class HomeFragment : Fragment(), SensorEventListener  {
                         val intent = Intent(requireContext(), Hives::class.java)
                         startActivity(intent)
                     }
+
                     R.id.nav_profile -> {
                         val intent = Intent(requireContext(), ProfileActivity::class.java)
                         startActivity(intent)
                     }
+
                     R.id.nav_logout -> {
                         StartActivity.api.Logout()
                         val intent = Intent(requireContext(), StartActivity::class.java)
@@ -186,15 +189,14 @@ class HomeFragment : Fragment(), SensorEventListener  {
                 menu_view.visibility = View.INVISIBLE
                 transparent_overlay.visibility = View.INVISIBLE
             }
-        }
-        
-        else{
+        } else {
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.nav_profile -> {
                         val intent = Intent(requireContext(), ProfileActivity::class.java)
                         startActivity(intent)
                     }
+
                     R.id.nav_logout -> {
                         StartActivity.api.Logout()
                         val intent = Intent(requireContext(), StartActivity::class.java)
@@ -302,21 +304,52 @@ class HomeFragment : Fragment(), SensorEventListener  {
         mapController.setCenter(startPoint)
 
         // add markers of found hives
-        for (hive in hivesFound){
-            Log.d("test", "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Ready to be collected!", time = reformatDateTime(hive.created), user_email = hive.email, marker_id = hive.id)
+        for (hive in hivesFound) {
+            Log.d(
+                "test",
+                "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
+            )
+            addmarker(
+                view,
+                longitude = hive.longitude.toDouble(),
+                latitude = hive.latitude.toDouble(),
+                header = "title",
+                snippet = "Ready to be collected!",
+                time = reformatDateTime(hive.created),
+                user_email = hive.email,
+                marker_id = hive.id
+            )
         }
 
         // add markers of navigated hives
-        for (hive in hivesNavigated){
-            Log.d("test", "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Other beekeeper on the way!", time = reformatDateTime(hive.created), user_email = hive.email, marker_id = hive.id)
+        for (hive in hivesNavigated) {
+            Log.d(
+                "test",
+                "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
+            )
+            addmarker(
+                view,
+                longitude = hive.longitude.toDouble(),
+                latitude = hive.latitude.toDouble(),
+                header = "title",
+                snippet = "Other beekeeper on the way!",
+                time = reformatDateTime(hive.created),
+                user_email = hive.email,
+                marker_id = hive.id
+            )
         }
 
         // add polys of searched hives
-        for (hive in hivesSearched){
-            Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0)
+        for (hive in hivesSearched) {
+            Log.d(
+                "test",
+                "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
+            )
+            addlostpoly(
+                view,
+                at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()),
+                radius = 1000.0
+            )
         }
 
         btn_menu.setOnClickListener {
@@ -565,21 +598,29 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     map.invalidate()
 
                     // delete collected hive from data base
-                    StartActivity.api.DeleteRequest("hive?id=$marker_id", "", fun(response: String) {
-                        (activity as MainActivity).runOnUiThread {
-                            kotlin.run {
-                                Log.d("test", "deleted hive")
+                    StartActivity.api.DeleteRequest(
+                        "hive?id=$marker_id",
+                        "",
+                        fun(response: String) {
+                            (activity as MainActivity).runOnUiThread {
+                                kotlin.run {
+                                    Log.d("test", "deleted hive")
+                                }
                             }
-                        }
-                    }, fun(i:Int, response: String) {
-                        Log.d("test", "error deleting hive")
-                    }).start()
+                        },
+                        fun(i: Int, response: String) {
+                            Log.d("test", "error deleting hive")
+                        }).start()
                 }
 
 
                 btn_navigate.setOnClickListener {
                     if (currentlyNavigatingTo != -1) {
-                        Toast.makeText(activity as MainActivity,"alredy navigating to a hive", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            activity as MainActivity,
+                            "alredy navigating to a hive",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         return@setOnClickListener
                     }
                     currentlyNavigatingTo = marker_id
@@ -668,17 +709,21 @@ class HomeFragment : Fragment(), SensorEventListener  {
                     }
                 }
 
-                StartActivity.api.GetRequest("hive/img?id=$marker_id", fun(response: String) {
-                    (activity as MainActivity).runOnUiThread {
-                        kotlin.run {
-                            val decodedBytes = Base64.decode(response, Base64.DEFAULT)
-                            img_bees.setImageBitmap(BitmapFactory.decodeByteArray(decodedBytes,0, decodedBytes.size))
-                            Log.d("test", "get img" + response::class.java)
+                StartActivity.api.GetRequest("hive/img?id=$marker_id",
+                    imgCallback = fun(response: Bitmap?) {
+                        Log.d("test", "get img")
+                        (activity as MainActivity).runOnUiThread {
+                            kotlin.run {
+                                img_bees.setImageBitmap(response)
+//                            Log.d("test", response)
+//                            val decodedBytes = Base64.decode(response, Base64.DEFAULT)
+//                            img_bees.setImageBitmap(BitmapFactory.decodeByteArray(decodedBytes,0, decodedBytes.size))
+                            }
                         }
-                    }
-                }, fun(i:Int, response: String) {
-                    Log.d("test", "error getting img")
-                }).start()
+                    },
+                    errorCallback = fun(i: Int, response: String) {
+                        Log.d("test", "error getting img")
+                    }).start()
 
                 return true
             }
@@ -836,15 +881,19 @@ class HomeFragment : Fragment(), SensorEventListener  {
         Log.d("test", "onDestroy")
 
         currentlyNavigatingTo = 0
-        StartActivity.api.PutRequest("hive/navigate?id=$currentlyNavigatingTo", "", fun(response: String) {
-            (activity as MainActivity).runOnUiThread {
-                kotlin.run {
-                    Log.d("test", "hive set navigate")
+        StartActivity.api.PutRequest(
+            "hive/navigate?id=$currentlyNavigatingTo",
+            "",
+            fun(response: String) {
+                (activity as MainActivity).runOnUiThread {
+                    kotlin.run {
+                        Log.d("test", "hive set navigate")
+                    }
                 }
-            }
-        }, fun(i:Int, response: String) {
-            Log.d("test", "error navigate hive")
-        }).start()
+            },
+            fun(i: Int, response: String) {
+                Log.d("test", "error navigate hive")
+            }).start()
     }
 }
 
