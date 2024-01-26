@@ -106,7 +106,9 @@ class HomeFragment : Fragment(), SensorEventListener {
     lateinit var hivesSearched: MutableList<Hive>
     lateinit var hivesSaved: MutableList<Hive>
 
-    var dipslayedIds = mutableListOf<Int>()
+    var dipslayedIdsFound = mutableListOf<Int>()
+    var dipslayedIdsNavigated = mutableListOf<Int>()
+    var dipslayedIdsSearched = mutableListOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -312,7 +314,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         mapController.setCenter(startPoint)
 
         // add markers of found hives
-        fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dispayedIds = dipslayedIds)
+        fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dipslayedIdsFound, dipslayedIdsNavigated, dipslayedIdsSearched)
 
         btn_menu.setOnClickListener {
             menu_view.visibility = View.VISIBLE
@@ -581,14 +583,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
 
                 btn_navigate.setOnClickListener {
-                    if (currentlyNavigatingTo != 0) {
-                        Toast.makeText(
-                            activity as MainActivity,
-                            "alredy navigating to a hive",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@setOnClickListener
-                    }
+
                     currentlyNavigatingTo = marker_id
                     marker.snippet = "Beekeeper on the way!"
                     status.text = marker.snippet
@@ -598,20 +593,26 @@ class HomeFragment : Fragment(), SensorEventListener {
 
                     btn_maps.visibility = View.VISIBLE
                     compass.visibility = View.VISIBLE
-
+                    // reset status of other hives
                     StartActivity.api.PutRequest(
-                        "hive/navigate?id=$marker_id",
+                        "hive/navigate?id=0",
                         "",
                         fun(response: String) {
                             (activity as MainActivity).runOnUiThread {
                                 kotlin.run {
                                     Log.d("test", "hive set navigate")
+                                    StartActivity.api.PutRequest(
+                                        "hive/navigate?id=$marker_id", "", fun(response: String) {
+                                            Log.d("test", "hive set navigate")
+                                        }).start()
                                 }
                             }
                         },
                         fun(i: Int, response: String) {
                             Log.d("test", "error navigate hive")
                         }).start()
+
+
 
                     btn_maps.setOnClickListener {
 
@@ -737,7 +738,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                 Log.d("test", "restart loop")
                 stopRepeatingTask()
                 startRepeatingTask()
-                fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dipslayedIds)
+                fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dipslayedIdsFound, dipslayedIdsNavigated, dipslayedIdsSearched)
 
             }
             .setNegativeButton("No") { dialog, which ->
@@ -838,7 +839,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     // define update loop for hives
     val handler = Handler()
-    val delayMillis: Long = 1000_00 // 10 seconds
+    val delayMillis: Long = 1000 // 1 second
     val runnable: Runnable = object : Runnable {
         override fun run() {
             // Your code to be executed repeatedly
@@ -851,7 +852,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                         hivesSaved = hSaved
                         hivesSearched = hSearched
 
-                        fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dispayedIds = dipslayedIds)
+                        fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dipslayedIdsFound, dipslayedIdsNavigated, dipslayedIdsSearched)
                     }
                 }
             }).start()
@@ -870,44 +871,64 @@ class HomeFragment : Fragment(), SensorEventListener {
         handler.removeCallbacks(runnable)
     }
 
-    fun fillmarkers(view: View, hivesFound: MutableList<Hive>, hivesNavigated: MutableList<Hive>, hivesSearched: MutableList<Hive>, dispayedIds: MutableList<Int>){
-        val hiveIds = mutableListOf<Int>()
+    fun fillmarkers(view: View, hivesFound: MutableList<Hive>, hivesNavigated: MutableList<Hive>, hivesSearched: MutableList<Hive>, dipslayedIdsFound: MutableList<Int>, displayedIdsNavigated: MutableList<Int>, dipslayedIdsSearched: MutableList<Int>){
+        val hiveIdsFound = mutableListOf<Int>()
+        val hiveIdsNavigated = mutableListOf<Int>()
+        val hiveIdsSearched = mutableListOf<Int>()
+
+        val removeIdsFound = mutableListOf<Int>()
+        val removeIdsNavigated = mutableListOf<Int>()
+        val removeIdsSearched = mutableListOf<Int>()
+
         for (hive in hivesFound){
-            hiveIds.add(hive.id)
-            if (dipslayedIds.contains(hive.id)){
+            hiveIdsFound.add(hive.id)
+            if (dipslayedIdsFound.contains(hive.id)){
                 continue
             }
             Log.d("test", "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            dipslayedIds.add(hive.id)
+            dipslayedIdsFound.add(hive.id)
             addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Ready to be collected!", time = reformatDateTime(hive.created), user_email = hive.email, marker_id = hive.id)
         }
+        for (id in dipslayedIdsFound){
+            if (!hiveIdsFound.contains(id)){
+                removeIdsFound.add(id)
+            }
+        }
+        dipslayedIdsFound.removeAll(removeIdsFound)
 
         // add markers of navigated hives
         for (hive in hivesNavigated){
-            hiveIds.add(hive.id)
-            if (dipslayedIds.contains(hive.id)){
+            hiveIdsNavigated.add(hive.id)
+            if (displayedIdsNavigated.contains(hive.id)){
                 continue
             }
             Log.d("test", "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            dipslayedIds.add(hive.id)
+            displayedIdsNavigated.add(hive.id)
             addmarker(view , longitude = hive.longitude.toDouble(), latitude = hive.latitude.toDouble(), header = "title", snippet = "Other beekeeper on the way!", time = reformatDateTime(hive.created), user_email = hive.email, marker_id = hive.id)
         }
+        for (id in displayedIdsNavigated){
+            if (!hiveIdsNavigated.contains(id)){
+                removeIdsNavigated.add(id)
+            }
+        }
+        displayedIdsNavigated.removeAll(removeIdsNavigated)
 
         // add polys of searched hives
         for (hive in hivesSearched){
-            hiveIds.add(hive.id)
-            if (dipslayedIds.contains(hive.id)){
+            hiveIdsSearched.add(hive.id)
+            if (dipslayedIdsSearched.contains(hive.id)){
                 continue
             }
-            dipslayedIds.add(hive.id)
+            dipslayedIdsSearched.add(hive.id)
             Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
             addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0)
         }
-        for (id in dipslayedIds){
-            if (!hiveIds.contains(id)){
-                dipslayedIds.remove(id)
+        for (id in dipslayedIdsSearched){
+            if (!hiveIdsSearched.contains(id)){
+                removeIdsSearched.add(id)
             }
         }
+        dipslayedIdsSearched.removeAll(removeIdsSearched)
     }
 
 
