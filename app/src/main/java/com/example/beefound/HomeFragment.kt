@@ -903,6 +903,23 @@ class HomeFragment : Fragment(), SensorEventListener {
         val removeIdsNavigated = mutableListOf<Int>()
         val removeIdsSearched = mutableListOf<Int>()
 
+        // add polys of searched hives
+        for (hive in hivesSearched){
+            hiveIdsSearched.add(hive.id)
+            if (dipslayedIdsSearched.contains(hive.id)){
+                continue
+            }
+            dipslayedIdsSearched.add(hive.id)
+            Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
+            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0)
+        }
+        for (id in dipslayedIdsSearched){
+            if (!hiveIdsSearched.contains(id)){
+                removeIdsSearched.add(id)
+            }
+        }
+        dipslayedIdsSearched.removeAll(removeIdsSearched)
+
         for (hive in hivesFound){
             hiveIdsFound.add(hive.id)
             if (dipslayedIdsFound.contains(hive.id)){
@@ -935,23 +952,6 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
         }
         displayedIdsNavigated.removeAll(removeIdsNavigated)
-
-        // add polys of searched hives
-        for (hive in hivesSearched){
-            hiveIdsSearched.add(hive.id)
-            if (dipslayedIdsSearched.contains(hive.id)){
-                continue
-            }
-            dipslayedIdsSearched.add(hive.id)
-            Log.d("test", "search hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}")
-            addlostpoly(view, at = GeoPoint(hive.latitude.toDouble(), hive.longitude.toDouble()) , radius = 1000.0)
-        }
-        for (id in dipslayedIdsSearched){
-            if (!hiveIdsSearched.contains(id)){
-                removeIdsSearched.add(id)
-            }
-        }
-        dipslayedIdsSearched.removeAll(removeIdsSearched)
     }
 
 
