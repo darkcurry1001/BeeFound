@@ -260,7 +260,6 @@ class Hives : Activity() {
                             .setNegativeButton("No") { dialog, which ->
                                 val intent = Intent(this, Hives::class.java)
                                 startActivity(intent)
-
                             }
 
                         val dialog: AlertDialog = builder.create()
