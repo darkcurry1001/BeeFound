@@ -80,6 +80,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     var latitude_glob: Double = 48.30639
     var longitude_glob: Double = 14.28611
+    var loc_updated:Boolean = false
 
     var latitude_marker: Double = 48.30639
     var longitude_marker: Double = 14.28611
@@ -160,13 +161,33 @@ class HomeFragment : Fragment(), SensorEventListener {
         locationRequest?.fastestInterval = TimeUnit.SECONDS.toMillis(30)
         locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
+        // get map
+        val map = view1.findViewById<MapView>(R.id.map)
+        val mapController = map.controller
+        mapController.setZoom(15)
         var locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
                 for (location in locationResult.locations) {
                     latitude_glob = location.latitude
                     longitude_glob = location.longitude
-                    Log.d(TAG, "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+
+                    if (!loc_updated){
+                        val startPoint =
+                            GeoPoint(
+                                latitude_glob,
+                                longitude_glob
+                            )
+                        Log.d("startCenter", "startPoint: $startPoint")
+                        requireActivity().runOnUiThread {
+                            kotlin.run {
+                                Log.d("startCenter", "startPoint: $startPoint")
+                                mapController.setCenter(startPoint)
+                            }
+                        }
+                    }
+                    loc_updated = true
+                    Log.d("startCenter", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
                 }
             }
         }
@@ -269,10 +290,6 @@ class HomeFragment : Fragment(), SensorEventListener {
 
         }
 
-
-        // get map
-        val map = view1.findViewById<MapView>(R.id.map)
-
         // get vars for all overlay elements
         val popup = view1.findViewById<View>(R.id.view_popup)
         val img_bees = view1.findViewById<ImageView>(R.id.img_bees)
@@ -311,13 +328,8 @@ class HomeFragment : Fragment(), SensorEventListener {
 
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)                                   // enable 2 finger zoom
-        map.setBuiltInZoomControls(false)                                 // disable zoom buttons
 
-        val mapController = map.controller
-        mapController.setZoom(15)                                           // set initial zoom level 15
-        val startPoint =
-            GeoPoint(latitude_glob, longitude_glob)             // show user location initially
-        mapController.setCenter(startPoint)
+        map.setBuiltInZoomControls(false)                                 // disable zoom buttons                                   // set initial zoom level 15
 
         // add markers of found hives
         fillmarkers(view1, hivesFound, hivesNavigated, hivesSearched, dipslayedIdsFound, dipslayedIdsNavigated, dipslayedIdsSearched)
