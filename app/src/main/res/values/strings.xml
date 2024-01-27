@@ -10,7 +10,7 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="regular_user">Regular User</string>
     <string name="beekeeper">Beekeeper</string>
-    <string name="email_address_optional">Email Address (optional)</string>
+    <string name="email_address_optional">Email Address</string>
     <string name="phone_number_optional">Phone Number (optional)</string>
     <string name="log_in_underlined"><u>Log In</u></string>
     <string name="sign_up_underlined"><u>Sign Up</u></string>
