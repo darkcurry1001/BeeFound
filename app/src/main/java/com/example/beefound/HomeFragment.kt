@@ -61,8 +61,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class HomeFragment : Fragment(), SensorEventListener {
+    private var accuracy: Int? = null
     lateinit var role: String
     // TODO: Rename and change types of parameters
 
@@ -111,6 +113,8 @@ class HomeFragment : Fragment(), SensorEventListener {
     var dipslayedIdsFound = mutableListOf<Int>()
     var dipslayedIdsNavigated = mutableListOf<Int>()
     var dipslayedIdsSearched = mutableListOf<Int>()
+
+    var positionMarker: LocationMarker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,8 +174,8 @@ class HomeFragment : Fragment(), SensorEventListener {
         mapController.animateTo(austriaCenter)
         mapController.setZoom(6.9)
 
-        val icon = resources.getDrawable(R.drawable.location_marker, null)
-        val positionMarker = LocationMarker(map, icon)//LocationMarker(map, icon)
+        val icon = resources.getDrawable(R.drawable.bee, null)
+        positionMarker = LocationMarker(map, icon, accuracy)//LocationMarker(map, icon)
 //        map.overlays?.add(positionMarker)
 //        positionMarker.icon = icon
 //        positionMarker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
@@ -208,7 +212,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                         "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
                     )
                     if (latitude_glob != null && longitude_glob != null) {
-                        positionMarker.setLocation(latitude_glob!!, longitude_glob!!)
+                        positionMarker?.setLocation(latitude_glob!!, longitude_glob!!)
                         map.invalidate()
                     }
                 }
@@ -449,7 +453,6 @@ class HomeFragment : Fragment(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-
         if (event != null) {
             if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
                 System.arraycopy(
@@ -471,9 +474,9 @@ class HomeFragment : Fragment(), SensorEventListener {
         )
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
 
-        rotation = (Math.toDegrees(orientationAngles[0].toDouble()) + 360) % 360
-
-        if (longitude_glob != null && latitude_glob != null) {
+        var r = (Math.toDegrees(orientationAngles[0].toDouble()) + 360) % 360
+        if (longitude_glob != null && latitude_glob != null && abs(rotation - r) > 1) {
+            rotation = r
             var long_temp = longitude_glob!!
             var lat_temp = latitude_glob!!
             var diff_lon = longitude_marker - long_temp
@@ -493,13 +496,20 @@ class HomeFragment : Fragment(), SensorEventListener {
 
             var compass = view1?.findViewById<ImageView>(R.id.image_compass)
             compass?.rotation = compass_angle.toFloat()
+            positionMarker?.setDirection(rotation.toFloat())
         }
 
 
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not needed for this example
+        if (abs(this.accuracy?.minus(accuracy) ?: 0) > 1){
+            Log.d(
+                "Location","update direction: ${abs(this.accuracy?.minus(accuracy) ?: 0)}"
+            )
+            this.accuracy = accuracy
+            positionMarker?.setAccuracy(accuracy)
+        }
     }
 
 
