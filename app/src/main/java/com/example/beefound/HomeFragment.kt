@@ -47,6 +47,9 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.navigation.NavigationView
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -170,12 +173,15 @@ class HomeFragment : Fragment(), SensorEventListener {
         val map = view1.findViewById<MapView>(R.id.map)
         val mapController = map.controller
         var austriaCenter = GeoPoint(47.516231, 14.550072)
+        map.maxZoomLevel = 19.5
+        map.minZoomLevel = 5.0
         mapController.setCenter(austriaCenter)
         mapController.animateTo(austriaCenter)
         mapController.setZoom(6.9)
 
         val icon = resources.getDrawable(R.drawable.bee, null)
-        positionMarker = LocationMarker(map, icon, accuracy)//LocationMarker(map, icon)
+        positionMarker =
+            LocationMarker(map, icon, accuracy, mapController)//LocationMarker(map, icon)
 //        map.overlays?.add(positionMarker)
 //        positionMarker.icon = icon
 //        positionMarker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
@@ -188,10 +194,13 @@ class HomeFragment : Fragment(), SensorEventListener {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
                 for (location in locationResult.locations) {
-                    latitude_glob = if (location.latitude != 0.0) location.latitude else latitude_glob
-                    longitude_glob = if (location.longitude != 0.0) location.longitude else longitude_glob
+                    latitude_glob =
+                        if (location.latitude != 0.0) location.latitude else latitude_glob
+                    longitude_glob =
+                        if (location.longitude != 0.0) location.longitude else longitude_glob
 
                     if (!loc_updated) {
+                        mapController.setZoom(15.0)
                         val startPoint =
                             GeoPoint(
                                 location.latitude,
@@ -475,7 +484,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
 
         var r = (Math.toDegrees(orientationAngles[0].toDouble()) + 360) % 360
-        if (longitude_glob != null && latitude_glob != null && abs(rotation - r) > 1) {
+        if (longitude_glob != null && latitude_glob != null && abs(rotation - r) > 5) {
             rotation = r
             var long_temp = longitude_glob!!
             var lat_temp = latitude_glob!!
@@ -503,9 +512,12 @@ class HomeFragment : Fragment(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        if (abs(this.accuracy?.minus(accuracy) ?: 0) > 1){
+        if (abs(
+                this.accuracy?.minus(accuracy) ?: 0
+            ) > 1 && sensor?.type == Sensor.TYPE_MAGNETIC_FIELD
+        ) {
             Log.d(
-                "Location","update direction: ${abs(this.accuracy?.minus(accuracy) ?: 0)}"
+                "Location", "update direction: ${abs(this.accuracy?.minus(accuracy) ?: 0)}"
             )
             this.accuracy = accuracy
             positionMarker?.setAccuracy(accuracy)

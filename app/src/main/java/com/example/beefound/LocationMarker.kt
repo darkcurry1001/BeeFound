@@ -5,61 +5,19 @@ import android.graphics.Bitmap
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.ColorFilter
-import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.PixelFormat
-import android.graphics.Rect
+import android.graphics.RadialGradient
+import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.util.Log
+import org.osmdroid.api.IMapController
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-
-class GlowingConeDrawable(context: Context, private val accuracy: Int) : Drawable() {
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val glowRadius = 20f
-    private val coneHeight = 50f // Adjust cone height as needed
-
-    init {
-        paint.color = Color.RED
-        paint.style = Paint.Style.FILL
-    }
-
-    override fun draw(canvas: Canvas) {
-        val bounds = bounds
-
-        // Draw the glowing effect
-        paint.maskFilter = BlurMaskFilter(glowRadius, BlurMaskFilter.Blur.NORMAL)
-        canvas.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), bounds.width() / 2f, paint)
-
-        // Draw the cone
-        paint.maskFilter = null
-        val path = Path()
-        path.moveTo(bounds.exactCenterX(), bounds.exactCenterY())
-        path.lineTo(bounds.exactCenterX(), bounds.top.toFloat() - coneHeight)
-        path.lineTo(bounds.right.toFloat(), bounds.bottom.toFloat())
-        path.lineTo(bounds.left.toFloat(), bounds.bottom.toFloat())
-        path.close()
-
-        canvas.drawPath(path, paint)
-    }
-
-    override fun setAlpha(alpha: Int) {
-        paint.alpha = alpha
-    }
-
-    override fun setColorFilter(colorFilter: ColorFilter?) {
-        paint.colorFilter = colorFilter
-    }
-
-    override fun getOpacity(): Int {
-        return PixelFormat.TRANSLUCENT
-    }
-}
-
 
 //Todo: google position marker
 class LocationMarker: Marker {
@@ -68,12 +26,16 @@ class LocationMarker: Marker {
     private var map: MapView
     private var accuracy: Int? = 80
     private var direction: Float? = null
-    private var glowingConeDrawable: GlowingConeDrawable? = null
+    private var mapController: IMapController
+    private var icon_center: Drawable
 
-    constructor(map: MapView, icon: Drawable, accuracy: Int?) : super(map){
+    constructor(map: MapView, icon: Drawable, accuracy: Int?, mapController: IMapController) : super(map){
         this.map = map
-        this.icon = icon
+        this.icon_center = icon
+        this.icon = icon_center
         this.accuracy = accuracy
+        this.setAnchor(ANCHOR_CENTER, ANCHOR_CENTER)
+        this.mapController = mapController
     }
 
     fun setLocation(lat: Double?, lon: Double?) {
@@ -81,6 +43,13 @@ class LocationMarker: Marker {
         if (!initialized) {
             map.overlays?.add(this)
             this.setOnMarkerClickListener { _, _ -> true }
+            this.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
+                override fun onMarkerClick(marker: Marker?, mapView: MapView?): Boolean {
+                    mapController.setZoom(17.0)
+                    mapController.setCenter(GeoPoint(lat, lon))
+                    return true
+                }
+            })
             initialized = true
         }
         this.position = GeoPoint(lat, lon)
@@ -90,28 +59,17 @@ class LocationMarker: Marker {
         Log.d(
             "Location","update accuracy: $accuracy"
         )
-//        if (glowingConeDrawable == null && direction === null) {
-//            glowingConeDrawable = GlowingConeDrawable(map.context, accuracy)
-//            icon = glowingConeDrawable
-//        } else {
-//            glowingConeDrawable?.let {
-//                it.alpha = (accuracy / 100f * 255).toInt()
-//                it.invalidateSelf()
-//            }
-//        }
+        if (direction == null) return
+        this.accuracy = accuracy
+        this.icon = icon_center
     }
 
-    fun setDirection(rotation: Float) {
+    fun setDirection(r: Float) {
         Log.d(
-            "Location","update direction: $rotation"
+            "Location","update direction: $r"
         )
-//        val matrix = Matrix()
-//        matrix.postRotate(rotation)
-//
-//        val bitmap = (this.icon as BitmapDrawable).bitmap
-//        val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-//
-//        this.icon = BitmapDrawable(rotatedBitmap)
+        this.rotation = -r
+        map.invalidate()
     }
 }
 
