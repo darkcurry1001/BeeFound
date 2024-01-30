@@ -26,8 +26,8 @@ import java.net.URLEncoder
 import kotlin.reflect.typeOf
 
 class Api {
-    var BaseUrl: String = "http://192.168.0.42:3000/api/"
-    //var BaseUrl: String = "http://skeller.at:3000/api/"
+    //var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    var BaseUrl: String = "http://skeller.at:3000/api/"
 
     var SessionToken: String = ""
     var RefreshToken: String = ""
