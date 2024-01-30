@@ -793,7 +793,21 @@ class HomeFragment : Fragment(), SensorEventListener {
                     StartActivity.api.sendMultipartRequest(
                         jsonData = "{\"Latitude\":\"$latitude_glob\",\"Longitude\":\"$longitude_glob\",\"type\":\"found\"}",
                         imageFile = img,
-                        serverUrl = "hive/found"
+                        serverUrl = "hive/found",
+                        callback = fun(response: String) {
+                            requireActivity().runOnUiThread {
+                            Log.d("test", "Found hive added successfully")
+                        }
+                        },
+                        errorCallback = fun(i: Int, response: String) {
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error uploading found hive\n $response",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                     )
                     requireActivity().runOnUiThread {
                         Log.d("test", "FileSend UI update")

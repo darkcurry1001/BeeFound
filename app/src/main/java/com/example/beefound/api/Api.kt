@@ -26,8 +26,8 @@ import java.net.URLEncoder
 import kotlin.reflect.typeOf
 
 class Api {
-    //var BaseUrl: String = "http://192.168.0.42:3000/api/"
-    var BaseUrl: String = "http://skeller.at:3000/api/"
+    var BaseUrl: String = "http://192.168.0.42:3000/api/"
+    //var BaseUrl: String = "http://skeller.at:3000/api/"
 
     var SessionToken: String = ""
     var RefreshToken: String = ""
@@ -80,8 +80,6 @@ class Api {
         }
     }
 
-
-    //    ToDo: handle returns (threads, saving tokens)
     fun Request(
         urlString: String, body: String, method: String, token: String = SessionToken,
         okCallback: (String) -> Unit = fun(_) {},
@@ -238,7 +236,9 @@ class Api {
         )
     }
 
-    fun sendMultipartRequest(jsonData: String, imageFile: File?, serverUrl: String) {
+    fun sendMultipartRequest(jsonData: String, imageFile: File?, serverUrl: String,
+                             callback: (String) -> Unit = fun(_){}, errorCallback: (Int, String) -> Unit = fun(_, _){}
+    ){
         Log.d("test", "FileSend")
         val boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW" // Replace with your desired boundary
 
@@ -286,7 +286,7 @@ class Api {
                 while (reader.readLine().also { line = it } != null) {
                     response.append(line)
                 }
-
+                callback(connection.responseMessage)
                 reader.close()
                 // Handle the response here
             } else {
@@ -296,9 +296,11 @@ class Api {
                         sendMultipartRequest(jsonData, imageFile, serverUrl)
                     })
                 }
+                var err = InputStreamReader(connection.errorStream).readText()
+                errorCallback(connection.responseCode, err)
                 Log.d("test", "File Send Error")
                 Log.d("test", connection.responseMessage)
-                Log.d("test", InputStreamReader(connection.errorStream).readText())
+                Log.d("test", err)
             }
         } finally {
             Log.d("test", "FileSend End")
