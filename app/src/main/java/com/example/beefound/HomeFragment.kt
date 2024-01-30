@@ -512,13 +512,13 @@ class HomeFragment : Fragment(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        Log.d(
+            "LocationACC", "update direction: ${accuracy}"
+        )
         if (abs(
                 this.accuracy?.minus(accuracy) ?: 0
-            ) > 1 && sensor?.type == Sensor.TYPE_MAGNETIC_FIELD
+            ) > 0 && sensor?.type == Sensor.TYPE_MAGNETIC_FIELD
         ) {
-            Log.d(
-                "Location", "update direction: ${abs(this.accuracy?.minus(accuracy) ?: 0)}"
-            )
             this.accuracy = accuracy
             positionMarker?.setAccuracy(accuracy)
         }
