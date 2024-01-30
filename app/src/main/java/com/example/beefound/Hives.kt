@@ -58,32 +58,32 @@ class Hives : Activity() {
         fun(hivesFound: MutableList<com.example.beefound.api.Hive>, hivesNavigated: MutableList<com.example.beefound.api.Hive>, hivesSaved: MutableList<com.example.beefound.api.Hive>, hivesSearched: MutableList<com.example.beefound.api.Hive>){
             runOnUiThread {
                 kotlin.run {
+                    //get hives from data base
                     Log.d("test", "gethives: ")
                     hives_Found = hivesFound
                     hives_Navigated = hivesNavigated
                     hives_Saved = hivesSaved
                     hives_Searched = hivesSearched
 
-
                     Log.d("test", "hives_saved: $hives_Saved")
+                    // add hives to list for list views
                     for (hive in hives_Saved){
-                            hiveList_names.add("ID:${hive.id} "+hive.name)
+                            hiveList_names.add(hive.name)
                             hiveList.add(Hive("${hive.name}", hive.id, hive.latitude.toDouble(), hive.longitude.toDouble()))
-
-
 
                     }
                     for (hive in hives_Searched){
-                        hiveList_names_searched.add("ID:${hive.id} "+hive.name)
+                        hiveList_names_searched.add(hive.name)
                         hiveList_searched.add(Hive("${hive.name}", hive.id, hive.latitude.toDouble(), hive.longitude.toDouble()))
                     }
 
 
                     setContentView(R.layout.activity_hives)
 
-                    lateinit var fusedLocationClient: FusedLocationProviderClient
 
                     // get location
+                    lateinit var fusedLocationClient: FusedLocationProviderClient
+
                     fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
                     locationRequest = LocationRequest.create()
                     locationRequest?.interval = TimeUnit.SECONDS.toMillis(60)
@@ -119,12 +119,12 @@ class Hives : Activity() {
                             Looper.getMainLooper()
                     )
 
-                    val addHive = findViewById<Button>(R.id.addHive)
 
+                    val addHive = findViewById<Button>(R.id.addHive)
                     val hivename = findViewById<TextView>(R.id.hivenametxt)
                     val hivelv = findViewById<ListView>(R.id.hivelist)
 
-
+                    // add hives to list view and also to the database
                     val adapter:ArrayAdapter<String> = ArrayAdapter(this, android.R.layout.simple_list_item_1, hiveList_names)
                     hivelv.adapter = adapter
                     addHive.setOnClickListener {
@@ -141,9 +141,9 @@ class Hives : Activity() {
                                             val hive = jsonresponse.getJSONObject("hive")
 
                                             id = hive.getInt("ID")
-                                            Toast.makeText(this, "Hive added to saved list", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(this, "${hivename.text.toString()} added to saved list", Toast.LENGTH_LONG).show()
 
-                                            hiveList_names.add("ID:$id "+hivename.text.toString())
+                                            hiveList_names.add(hivename.text.toString())
                                             hiveList.add(Hive(hivename.text.toString(), id, latitude_glob, longitude_glob))
 
                                             adapter.notifyDataSetChanged()
@@ -160,23 +160,22 @@ class Hives : Activity() {
                         }
                     }
 
-
+                    // click listener for saved hives
                     hivelv.setOnItemClickListener { parent, view, position, id ->
                         Log.d(ContentValues.TAG, "Name: ${hiveList[position].name} Latitude: ${hiveList[position].latitude}, Longitude: ${hiveList[position].longitude}")
 
                         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
                         builder
                             .setTitle("Confirm")
-                            .setMessage("Do you want to mark this hive to be searched for or remove it?")
+                            .setMessage("Do you want to add search area for this hive or remove it?")
                             .setPositiveButton("Search Hive") { dialog, which ->
-                                //  api call to add hive to be searched for
                                 StartActivity.api.PutRequest("hive/save/search?id=${hiveList[position].id}",
                                     "",
                                     fun(response: String) {
                                         runOnUiThread {
                                             kotlin.run {
                                                 Log.d(ContentValues.TAG, "Search for hive ${hiveList[position].name}, ${hiveList[position].id}")
-                                                Toast.makeText(this, "Hive added to search list", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(this, "Searching for ${hiveList[position].name}", Toast.LENGTH_LONG).show()
                                                 val intent = Intent(this, Hives::class.java)
                                                 startActivity(intent)
                                             }
@@ -192,14 +191,13 @@ class Hives : Activity() {
 
                             }
                             .setNegativeButton("Remove") { dialog, which ->
-                                // api call to stop searching for hive
                                 StartActivity.api.DeleteRequest("hive?id=${hiveList[position].id}",
                                     "",
                                     fun(response: String) {
                                         runOnUiThread {
                                             kotlin.run {
                                                 Log.d(ContentValues.TAG, "Deleted from saved ${hiveList[position].name}, ${hiveList[position].id}")
-                                                Toast.makeText(this, "Hive added to search list", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(this, "Deleted ${hiveList[position].name}", Toast.LENGTH_LONG).show()
                                                 val intent = Intent(this, Hives::class.java)
                                                 startActivity(intent)
                                             }
@@ -227,6 +225,7 @@ class Hives : Activity() {
                     val adapter_searched:ArrayAdapter<String> = ArrayAdapter(this, android.R.layout.simple_list_item_1, hiveList_names_searched)
                     searched_hivelv.adapter = adapter_searched
 
+                    // click listener for searched hives
                     searched_hivelv.setOnItemClickListener { parent, view, position, id ->
                         Log.d(ContentValues.TAG, "Name: ${hiveList_searched[position].name} Latitude: ${hiveList_searched[position].latitude}, Longitude: ${hiveList_searched[position].longitude}")
 
@@ -242,7 +241,7 @@ class Hives : Activity() {
                                         runOnUiThread {
                                             kotlin.run {
                                                 Log.d(ContentValues.TAG, "Stop Search for hive ${hiveList_searched[position].name}, ${hiveList_searched[position].id}")
-                                                Toast.makeText(this, "Deleted hive from search list", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(this, "Stop Search for ${hiveList_searched[position].name}", Toast.LENGTH_LONG).show()
                                                 val intent = Intent(this, Hives::class.java)
                                                 startActivity(intent)
                                             }
