@@ -492,17 +492,6 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
     }
 
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        initializeSensors()
-    }
-
     // add new marker to map
     fun addmarker(
         view: View,
@@ -1036,6 +1025,16 @@ class HomeFragment : Fragment(), SensorEventListener {
         displayedIdsNavigated.removeAll(removeIdsNavigated)
     }
 
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        initializeSensors()
+        startRepeatingTask()
+    }
 
     // stop update loop on stop
     override fun onStop() {
