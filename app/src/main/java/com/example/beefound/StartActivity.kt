@@ -20,6 +20,7 @@ class StartActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
 
+        // connect to api
         api = Api(this,
             refreshOkCallback = fun (){
                 runOnUiThread {
@@ -40,6 +41,7 @@ class StartActivity : Activity() {
             }
         })
 
+        // check if already logged in
         api.GetRequest("auth/test/",
             fun(response: String) {
                 Middleware.getUser(fun(user: User) {
@@ -60,6 +62,7 @@ class StartActivity : Activity() {
                 }).start()
             }).start()
 
+        // go to signup
         val signUpButton: Button = findViewById<Button>(R.id.signUpButton)
         signUpButton.setOnClickListener {
             // Start the SignUpActivity
@@ -67,6 +70,7 @@ class StartActivity : Activity() {
             startActivity(intent)
         }
 
+        // go to login
         val logInButton: Button = findViewById<Button>(R.id.logInButton)
         logInButton.setOnClickListener {
             // Start the SignUpActivity

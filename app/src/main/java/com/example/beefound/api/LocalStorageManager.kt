@@ -6,6 +6,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 
+// storage manager for saving and reading session and refresh tokens
 class LocalStorageManager(private val context: Context) {
 
     fun saveStringToFile(fileName: String, data: String) {

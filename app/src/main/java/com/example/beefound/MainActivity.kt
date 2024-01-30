@@ -20,15 +20,9 @@ import java.io.File
 
 class MainActivity : FragmentActivity()  {
 
-    lateinit var searched_hive_name: String
-    var searched_hive_lat: Double = 0.0
-    var searched_hive_long: Double = 0.0
     private val IMAGE_FILE_NAME: String = "test.jpg"
 
     private var photoFile: File = File("drawable/bees.jpg")
-
-    var sensor: Sensor? = null
-    var sensorManager: SensorManager? = null
 
     lateinit var userName: String
     lateinit var userEmail: String

@@ -44,8 +44,6 @@ class Hives : Activity() {
     var latitude_glob: Double? = 48.4458708
     var longitude_glob: Double? = 14.5307493
 
-
-
     lateinit var hives_Found: List<com.example.beefound.api.Hive>
     lateinit var hives_Navigated: List<com.example.beefound.api.Hive>
     lateinit var hives_Saved: List<com.example.beefound.api.Hive>

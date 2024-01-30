@@ -17,6 +17,7 @@ class LogIn : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
 
+        // go to sign up
         val signUp: TextView = findViewById<TextView>(R.id.signUp)
         signUp.setOnClickListener {
             // Start the SignUpActivity
@@ -26,8 +27,8 @@ class LogIn : Activity() {
 
         val logIn = findViewById<Button>(R.id.logInButton)
         logIn.setOnClickListener {
-            // Start the SignUpActivity
 
+            // api login request, continue to main activity with loaded user data
             StartActivity.api.PostRequest("auth/login/",
                 "{\"username\": \"${findViewById<TextView>(R.id.username).text}\"," +
                         "\"password\": \"${findViewById<TextView>(R.id.password).text}\"}",
