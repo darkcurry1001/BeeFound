@@ -749,13 +749,14 @@ class HomeFragment : Fragment(), SensorEventListener {
             .setPositiveButton("Yes") { dialog, which ->
                 // add marker
                 Thread(Runnable {
+                    Log.d("testFound", "Found hive added successfully")
                     StartActivity.api.sendMultipartRequest(
                         jsonData = "{\"Latitude\":\"$latitude_glob\",\"Longitude\":\"$longitude_glob\",\"type\":\"found\"}",
                         imageFile = img,
                         serverUrl = "hive/found",
                         callback = fun(response: String) {
                             requireActivity().runOnUiThread {
-                            Log.d("test", "Found hive added successfully")
+                            Log.d("testFound", "Found hive added successfully")
                         }
                         },
                         errorCallback = fun(i: Int, response: String) {
@@ -765,26 +766,27 @@ class HomeFragment : Fragment(), SensorEventListener {
                                     "Error uploading found hive\n $response",
                                     Toast.LENGTH_LONG
                                 ).show()
+                                Log.d("testFound", "FileSend UI error update")
+                                Log.d("testFound", "FileSend UI error: $response")
                             }
                         }
                     )
                     requireActivity().runOnUiThread {
-                        Log.d("test", "FileSend UI update")
+                        Log.d("testFound", "FileSend UI update")
+                        Log.d("test", "restart loop")
+                        stopRepeatingTask()
+                        startRepeatingTask()
+                        fillmarkers(
+                            view1,
+                            hivesFound,
+                            hivesNavigated,
+                            hivesSearched,
+                            dipslayedIdsFound,
+                            dipslayedIdsNavigated,
+                            dipslayedIdsSearched
+                        )
                     }
                 }).start()
-
-                Log.d("test", "restart loop")
-                stopRepeatingTask()
-                startRepeatingTask()
-                fillmarkers(
-                    view1,
-                    hivesFound,
-                    hivesNavigated,
-                    hivesSearched,
-                    dipslayedIdsFound,
-                    dipslayedIdsNavigated,
-                    dipslayedIdsSearched
-                )
 
             }
             .setNegativeButton("No") { dialog, which ->
