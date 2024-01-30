@@ -5,22 +5,11 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
-    <fragment
-        android:id="@+id/popupFragment"
-        android:name="com.example.beefound.PopupFragment"
-        android:label="fragment_popup"
-        tools:layout="@layout/fragment_popup" >
-        <action
-            android:id="@+id/action_popupFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
-    </fragment>
+
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.beefound.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
-        <action
-            android:id="@+id/action_homeFragment_to_popupFragment"
-            app:destination="@id/popupFragment" />
     </fragment>
 </navigation>

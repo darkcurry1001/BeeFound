@@ -1,28 +1,13 @@
 package com.example.beefound.api
 
-import android.util.Log
 import com.example.beefound.StartActivity
 import org.json.JSONArray
 import org.json.JSONObject
-import javax.security.auth.callback.Callback
 
+// helper functions for api requests
 class Middleware {
 
-    fun getUser(callback: (user: User)->Unit): Thread{
-        return StartActivity.api.GetRequest("user/", fun (response: String){
-                val jsonObject = JSONObject(response)
-                val user = User(
-                    jsonObject.getInt("id"),
-                    jsonObject.getString("username"),
-                    jsonObject.getString("email"),
-                    jsonObject.getString("phone"),
-                    jsonObject.getString("user_role")
-                )
-                callback(user)
-        })
-    }
-
-
+    // get user data
     companion object {
         fun getUser(callback: (user: User)->Unit): Thread{
             return StartActivity.api.GetRequest("user/", fun (response: String){
@@ -43,6 +28,7 @@ class Middleware {
             })
         }
 
+        //get hive data
         fun getHives(callback: (hivesFound: MutableList<Hive>, hivesNavigated: MutableList<Hive>, hivesSaved: MutableList<Hive>, hivesSearched: MutableList<Hive>)->Unit): Thread{
             return StartActivity.api.GetRequest("hive/", fun (response: String){
                 val jsonObject = JSONObject(response)

@@ -46,7 +46,7 @@ class SignUp : Activity() {
         val pswConfirm = findViewById<TextView>(R.id.confirmPassword)
 
 
-
+        // check input for signup
         signUp.setOnClickListener {
             val user = username.text.toString()
             val password = psw.text.toString()
@@ -86,6 +86,7 @@ class SignUp : Activity() {
             jsonObject.put("role", if (user_role_beekeeper.isChecked) "beekeeper" else "user")
             jsonObject.put("password", psw.text.toString())
 
+            // send signup request to api and start main activity
             StartActivity.api.PostRequest("auth/signup/", jsonObject.toString(), fun (response: String){
                 runOnUiThread {
                     kotlin.run {

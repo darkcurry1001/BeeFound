@@ -69,7 +69,6 @@ import kotlin.math.abs
 class HomeFragment : Fragment(), SensorEventListener {
     private var accuracy: Int? = null
     lateinit var role: String
-    // TODO: Rename and change types of parameters
 
     private val CAMERA_REQUEST_CODE = 4711
     private var someActivityResultLauncher: ActivityResultLauncher<Intent>? = null
@@ -79,9 +78,8 @@ class HomeFragment : Fragment(), SensorEventListener {
     var locationRequest: LocationRequest? = null
 
     lateinit var view1: View
+    lateinit var map: MapView
 
-
-    private val permissionId = 2
     var swarms = mutableListOf<Marker>()
 
     var latitude_glob: Double? = null
@@ -92,7 +90,6 @@ class HomeFragment : Fragment(), SensorEventListener {
     var longitude_marker: Double = 14.28611
 
     // for sensor
-
     private lateinit var sensorManager: SensorManager
     var accelerometer: Sensor? = null
     var magnetometer: Sensor? = null
@@ -107,6 +104,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     //hive info variables
     var currentlyNavigatingTo: Int = 0
+    var markerList = mutableListOf<Marker>()
 
     lateinit var hivesFound: MutableList<Hive>
     lateinit var hivesNavigated: MutableList<Hive>
@@ -119,20 +117,16 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     var positionMarker: LocationMarker? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // get user data from MainActivity
+    ): View {
         // reference to MainActivity
         val main = (activity as MainActivity)
+
+        // get user data from MainActivity
         val userEmail = main.userEmail
         val userId = main.userId
         val userName = main.userName
@@ -170,7 +164,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         // get map
-        val map = view1.findViewById<MapView>(R.id.map)
+        map = view1.findViewById<MapView>(R.id.map)
         val mapController = map.controller
         var austriaCenter = GeoPoint(47.516231, 14.550072)
         map.maxZoomLevel = 19.5
@@ -179,17 +173,11 @@ class HomeFragment : Fragment(), SensorEventListener {
         mapController.animateTo(austriaCenter)
         mapController.setZoom(6.9)
 
+        // set up user location marker
         val icon = resources.getDrawable(R.drawable.bee, null)
-        positionMarker =
-            LocationMarker(map, icon, accuracy, mapController)//LocationMarker(map, icon)
-//        map.overlays?.add(positionMarker)
-//        positionMarker.icon = icon
-//        positionMarker.setOnMarkerClickListener(object : Marker.OnMarkerClickListener {
-//            override fun onMarkerClick(marker: Marker, mapView: MapView): Boolean {
-//                return true
-//            }
-//        })
+        positionMarker = LocationMarker(map, icon, accuracy, mapController)
 
+        // center user location when location is found
         var locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
@@ -229,19 +217,15 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
         val menu_view = view1.findViewById<NavigationView>(R.id.nav_view)
 
+        // add transparent overlay to enable map clicks
         val transparent_overlay = view1.findViewById<View>(R.id.transparent_overlay)
-        if (role == "beekeeper") {
 
+        // set up menu
+        if (role == "beekeeper") {
             menu_view.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.nav_hives -> {
                         val intent = Intent(requireContext(), Hives::class.java)
-                        /*
-                        intent.putExtra("id", userId)
-                        intent.putExtra("username", userName)
-                        intent.putExtra("email", userEmail)
-                        intent.putExtra("phone", userPhone)
-                        intent.putExtra("user_role", role)*/
                         startActivity(intent)
                     }
 
@@ -271,17 +255,13 @@ class HomeFragment : Fragment(), SensorEventListener {
                 true
             }
 
-
-
             transparent_overlay.setOnClickListener {
                 menu_view.visibility = View.INVISIBLE
                 transparent_overlay.visibility = View.INVISIBLE
             }
         }
 
-        // set up menu
-
-
+        // check/get location permission
         if (checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -400,19 +380,9 @@ class HomeFragment : Fragment(), SensorEventListener {
                 return@setOnClickListener
             }
 
-            // set timestamp for marker
-            val currentDateAndTime = sdf.format(Date())
-
             // open confirmation to add marker
             if (latitude_glob != null && longitude_glob != null) {
                 markerConfirmation(
-                    view1,
-                    longitude = longitude_glob!!,
-                    latitude = latitude_glob!!,
-                    header = "",
-                    snippet = "",
-                    time = sdf.format(Date()),
-                    user_email = userEmail,
                     img = (activity as MainActivity?)?.getImageFile()
                 )
             } else {
@@ -420,8 +390,7 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
 
         }
-        // onclick maps button (changes to other fragment for now)
-        //btn_maps.setOnClickListener { Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_popupFragment) }
+        // onclick maps button
         btn_maps.setOnClickListener {
             val gmmIntentUri =
                 Uri.parse("google.navigation:q=48.30639,14.28611")
@@ -443,9 +412,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
 
         startRepeatingTask()
-
         return view1
-
     }
 
     private fun initializeSensors() {
@@ -461,6 +428,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
     }
 
+    // get compass direction from sensor
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
@@ -545,14 +513,13 @@ class HomeFragment : Fragment(), SensorEventListener {
         time: String,
         user_email: String,
         marker_id: Int,
-    ) {
+    ) : Marker {
         val map = view.findViewById<MapView>(R.id.map)
         val marker = Marker(map)
-        marker.position = GeoPoint(latitude, longitude) // Set the position for the marker
-        //marker.isInfoWindowShown // Show the info window
-        //marker.title = "Marker Title"
+        marker.position = GeoPoint(latitude, longitude)
         marker.snippet = snippet
         marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
+        marker.id = marker_id.toString()
         map.overlays?.add(marker)
         map.invalidate()
         swarms.add(marker)
@@ -569,7 +536,6 @@ class HomeFragment : Fragment(), SensorEventListener {
                 val timestamp = view.findViewById<TextView>(R.id.txt_timestamp)
                 val status = view.findViewById<TextView>(R.id.txt_status)
                 val email = view.findViewById<TextView>(R.id.txt_email)
-
 
                 val btn_navigate = view.findViewById<Button>(R.id.btn_navigate)
                 val btn_collected = view.findViewById<Button>(R.id.btn_collected)
@@ -646,7 +612,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                         }).start()
                 }
 
-
+                // onclick for navigate button
                 btn_navigate.setOnClickListener {
 
                     currentlyNavigatingTo = marker_id
@@ -658,6 +624,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
                     btn_maps.visibility = View.VISIBLE
                     compass.visibility = View.VISIBLE
+
                     // reset status of other hives
                     StartActivity.api.PutRequest(
                         "hive/navigate?id=0",
@@ -677,8 +644,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                             Log.d("test", "error navigate hive")
                         }).start()
 
-
-
+                    // onclick for navigate button
                     btn_maps.setOnClickListener {
 
                         //get longitude and latitude of marker
@@ -696,7 +662,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                     longitude_marker = longitude
                 }
 
-
+                // change marker status
                 when (marker.snippet) {
                     "Ready to be collected!" -> {
                         if (role == "beekeeper") {
@@ -738,19 +704,16 @@ class HomeFragment : Fragment(), SensorEventListener {
                     }
 
                     else -> {
-                        // TODO: add for imker in the way
                     }
                 }
 
+                // load image from data base
                 StartActivity.api.GetRequest("hive/img?id=$marker_id",
                     imgCallback = fun(response: Bitmap?) {
                         Log.d("test", "get img")
                         (activity as MainActivity).runOnUiThread {
                             kotlin.run {
                                 img_bees.setImageBitmap(response)
-//                            Log.d("test", response)
-//                            val decodedBytes = Base64.decode(response, Base64.DEFAULT)
-//                            img_bees.setImageBitmap(BitmapFactory.decodeByteArray(decodedBytes,0, decodedBytes.size))
                             }
                         }
                     },
@@ -767,16 +730,12 @@ class HomeFragment : Fragment(), SensorEventListener {
             marker.snippet = "Other beekeeper on the way!"
             map.invalidate()
         }
+
+        return marker
     }
 
+    // user confirmation to add marker
     fun markerConfirmation(
-        view: View,
-        longitude: Double,
-        latitude: Double,
-        header: String,
-        snippet: String,
-        time: String,
-        user_email: String,
         img: File? = null
     ) {
         val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm")
@@ -836,7 +795,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         dialog.show()
     }
 
-
+    // take picture
     fun takePhoto(): File? {
         Log.d(TAG, "Use system camera to take photo")
         // use Intent to access camera
@@ -861,12 +820,8 @@ class HomeFragment : Fragment(), SensorEventListener {
         return null
     }
 
+    // add polygon to map
     fun addlostpoly(view: View, at: GeoPoint, radius: Double) {
-        /*
-        view ... map view from fragment_home.xml to add the polygon to
-        at ... GeoPoint of location of the center of the circle
-        radius ... radius of the circle in meters
-        */
 
         val map = view.findViewById<MapView>(R.id.map)
         val circle = Polygon()
@@ -910,6 +865,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                 })
     }
 
+    // reformat date time from data base for displaying
     fun reformatDateTime(originalDateTime: String): String {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS", Locale.US)
         val outputFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.US)
@@ -929,7 +885,7 @@ class HomeFragment : Fragment(), SensorEventListener {
     val delayMillis: Long = 1000 // 1 second
     val runnable: Runnable = object : Runnable {
         override fun run() {
-            // Your code to be executed repeatedly
+            // repeatedly executed code
             Middleware.getHives(fun(
                 hFound: MutableList<Hive>,
                 hNavigated: MutableList<Hive>,
@@ -957,8 +913,6 @@ class HomeFragment : Fragment(), SensorEventListener {
                 }
             }).start()
             // Schedule the next execution after the specified delay
-
-
             handler.postDelayed(this, delayMillis)
         }
     }
@@ -972,6 +926,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         handler.removeCallbacks(runnable)
     }
 
+    // update displayed markers
     fun fillmarkers(
         view: View,
         hivesFound: MutableList<Hive>,
@@ -1013,6 +968,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
         dipslayedIdsSearched.removeAll(removeIdsSearched)
 
+        // add markers of found hives
         for (hive in hivesFound) {
             hiveIdsFound.add(hive.id)
             if (dipslayedIdsFound.contains(hive.id)) {
@@ -1020,10 +976,11 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
             Log.d(
                 "test",
-                "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
+                "found hive ${hive.id} at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
             )
             dipslayedIdsFound.add(hive.id)
-            addmarker(
+            markerList.add(
+                addmarker(
                 view,
                 longitude = hive.longitude.toDouble(),
                 latitude = hive.latitude.toDouble(),
@@ -1032,7 +989,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                 time = reformatDateTime(hive.created),
                 user_email = hive.email,
                 marker_id = hive.id
-            )
+            ))
         }
         for (id in dipslayedIdsFound) {
             if (!hiveIdsFound.contains(id)) {
@@ -1052,26 +1009,35 @@ class HomeFragment : Fragment(), SensorEventListener {
                 "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
             )
             displayedIdsNavigated.add(hive.id)
-            addmarker(
-                view,
-                longitude = hive.longitude.toDouble(),
-                latitude = hive.latitude.toDouble(),
-                header = "title",
-                snippet = "Other beekeeper on the way!",
-                time = reformatDateTime(hive.created),
-                user_email = hive.email,
-                marker_id = hive.id
-            )
+            markerList.add(
+                addmarker(
+                    view,
+                    longitude = hive.longitude.toDouble(),
+                    latitude = hive.latitude.toDouble(),
+                    header = "title",
+                    snippet = "Other beekeeper on the way!",
+                    time = reformatDateTime(hive.created),
+                    user_email = hive.email,
+                    marker_id = hive.id
+                ))
         }
         for (id in displayedIdsNavigated) {
             if (!hiveIdsNavigated.contains(id)) {
                 removeIdsNavigated.add(id)
+                for (marker in markerList){
+                    Log.d("Time", "${marker.id}, ${id.toString()}")
+                    if (marker.id == id.toString()){
+                        marker.remove(map)
+                        map.invalidate()
+                    }
+                }
             }
         }
         displayedIdsNavigated.removeAll(removeIdsNavigated)
     }
 
 
+    // stop update loop on stop
     override fun onStop() {
         super.onStop()
         Log.d("test", "onStop")
@@ -1079,6 +1045,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         stopRepeatingTask()
     }
 
+    // stop navigation on destroy
     override fun onDestroy() {
         Log.d("test", "onStop")
         try {
