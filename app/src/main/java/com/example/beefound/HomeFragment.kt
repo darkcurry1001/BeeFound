@@ -78,6 +78,7 @@ class HomeFragment : Fragment(), SensorEventListener {
     var locationRequest: LocationRequest? = null
 
     lateinit var view1: View
+    lateinit var map: MapView
 
     var swarms = mutableListOf<Marker>()
 
@@ -103,6 +104,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     //hive info variables
     var currentlyNavigatingTo: Int = 0
+    var markerList = mutableListOf<Marker>()
 
     lateinit var hivesFound: MutableList<Hive>
     lateinit var hivesNavigated: MutableList<Hive>
@@ -162,7 +164,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         // get map
-        val map = view1.findViewById<MapView>(R.id.map)
+        map = view1.findViewById<MapView>(R.id.map)
         val mapController = map.controller
         var austriaCenter = GeoPoint(47.516231, 14.550072)
         map.maxZoomLevel = 19.5
@@ -511,12 +513,13 @@ class HomeFragment : Fragment(), SensorEventListener {
         time: String,
         user_email: String,
         marker_id: Int,
-    ) {
+    ) : Marker {
         val map = view.findViewById<MapView>(R.id.map)
         val marker = Marker(map)
         marker.position = GeoPoint(latitude, longitude)
         marker.snippet = snippet
         marker.icon = resources.getDrawable(R.drawable.bee_marker, null)
+        marker.id = marker_id.toString()
         map.overlays?.add(marker)
         map.invalidate()
         swarms.add(marker)
@@ -727,6 +730,8 @@ class HomeFragment : Fragment(), SensorEventListener {
             marker.snippet = "Other beekeeper on the way!"
             map.invalidate()
         }
+
+        return marker
     }
 
     // user confirmation to add marker
@@ -971,10 +976,11 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
             Log.d(
                 "test",
-                "found hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
+                "found hive ${hive.id} at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
             )
             dipslayedIdsFound.add(hive.id)
-            addmarker(
+            markerList.add(
+                addmarker(
                 view,
                 longitude = hive.longitude.toDouble(),
                 latitude = hive.latitude.toDouble(),
@@ -983,7 +989,7 @@ class HomeFragment : Fragment(), SensorEventListener {
                 time = reformatDateTime(hive.created),
                 user_email = hive.email,
                 marker_id = hive.id
-            )
+            ))
         }
         for (id in dipslayedIdsFound) {
             if (!hiveIdsFound.contains(id)) {
@@ -1003,20 +1009,28 @@ class HomeFragment : Fragment(), SensorEventListener {
                 "navigated hive at: ${hive.longitude.toDouble()},  ${hive.latitude.toDouble()}"
             )
             displayedIdsNavigated.add(hive.id)
-            addmarker(
-                view,
-                longitude = hive.longitude.toDouble(),
-                latitude = hive.latitude.toDouble(),
-                header = "title",
-                snippet = "Other beekeeper on the way!",
-                time = reformatDateTime(hive.created),
-                user_email = hive.email,
-                marker_id = hive.id
-            )
+            markerList.add(
+                addmarker(
+                    view,
+                    longitude = hive.longitude.toDouble(),
+                    latitude = hive.latitude.toDouble(),
+                    header = "title",
+                    snippet = "Other beekeeper on the way!",
+                    time = reformatDateTime(hive.created),
+                    user_email = hive.email,
+                    marker_id = hive.id
+                ))
         }
         for (id in displayedIdsNavigated) {
             if (!hiveIdsNavigated.contains(id)) {
                 removeIdsNavigated.add(id)
+                for (marker in markerList){
+                    Log.d("Time", "${marker.id}, ${id.toString()}")
+                    if (marker.id == id.toString()){
+                        marker.remove(map)
+                        map.invalidate()
+                    }
+                }
             }
         }
         displayedIdsNavigated.removeAll(removeIdsNavigated)
