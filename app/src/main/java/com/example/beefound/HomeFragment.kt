@@ -502,7 +502,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         time: String,
         user_email: String,
         marker_id: Int,
-    ) : Marker {
+    ): Marker {
         val map = view.findViewById<MapView>(R.id.map)
         val marker = Marker(map)
         marker.position = GeoPoint(latitude, longitude)
@@ -745,8 +745,21 @@ class HomeFragment : Fragment(), SensorEventListener {
                         serverUrl = "hive/found",
                         callback = fun(response: String) {
                             requireActivity().runOnUiThread {
-                            Log.d("testFound", "Found hive added successfully")
-                        }
+                                Log.d("testFound", "Found hive added successfully")
+                                Log.d("testFound", "FileSend UI update")
+                                Log.d("test", "restart loop")
+                                stopRepeatingTask()
+                                startRepeatingTask()
+                                fillmarkers(
+                                    view1,
+                                    hivesFound,
+                                    hivesNavigated,
+                                    hivesSearched,
+                                    dipslayedIdsFound,
+                                    dipslayedIdsNavigated,
+                                    dipslayedIdsSearched
+                                )
+                            }
                         },
                         errorCallback = fun(i: Int, response: String) {
                             requireActivity().runOnUiThread {
@@ -760,23 +773,8 @@ class HomeFragment : Fragment(), SensorEventListener {
                             }
                         }
                     )
-                    requireActivity().runOnUiThread {
-                        Log.d("testFound", "FileSend UI update")
-                        Log.d("test", "restart loop")
-                        stopRepeatingTask()
-                        startRepeatingTask()
-                        fillmarkers(
-                            view1,
-                            hivesFound,
-                            hivesNavigated,
-                            hivesSearched,
-                            dipslayedIdsFound,
-                            dipslayedIdsNavigated,
-                            dipslayedIdsSearched
-                        )
-                    }
-                }).start()
 
+                }).start()
             }
             .setNegativeButton("No") { dialog, which ->
                 // Do not add marker
@@ -972,15 +970,16 @@ class HomeFragment : Fragment(), SensorEventListener {
             dipslayedIdsFound.add(hive.id)
             markerList.add(
                 addmarker(
-                view,
-                longitude = hive.longitude.toDouble(),
-                latitude = hive.latitude.toDouble(),
-                header = "title",
-                snippet = "Ready to be collected!",
-                time = reformatDateTime(hive.created),
-                user_email = hive.email,
-                marker_id = hive.id
-            ))
+                    view,
+                    longitude = hive.longitude.toDouble(),
+                    latitude = hive.latitude.toDouble(),
+                    header = "title",
+                    snippet = "Ready to be collected!",
+                    time = reformatDateTime(hive.created),
+                    user_email = hive.email,
+                    marker_id = hive.id
+                )
+            )
         }
         for (id in dipslayedIdsFound) {
             if (!hiveIdsFound.contains(id)) {
@@ -1010,14 +1009,15 @@ class HomeFragment : Fragment(), SensorEventListener {
                     time = reformatDateTime(hive.created),
                     user_email = hive.email,
                     marker_id = hive.id
-                ))
+                )
+            )
         }
         for (id in displayedIdsNavigated) {
             if (!hiveIdsNavigated.contains(id)) {
                 removeIdsNavigated.add(id)
-                for (marker in markerList){
+                for (marker in markerList) {
                     Log.d("Time", "${marker.id}, ${id.toString()}")
-                    if (marker.id == id.toString()){
+                    if (marker.id == id.toString()) {
                         marker.remove(map)
                         map.invalidate()
                     }
