@@ -67,14 +67,14 @@ class Hives : Activity() {
 
                     Log.d("test", "hives_saved: $hives_Saved")
                     for (hive in hives_Saved){
-                            hiveList_names.add("ID:${hive.id} "+hive.name)
+                            hiveList_names.add(hive.name)
                             hiveList.add(Hive("${hive.name}", hive.id, hive.latitude.toDouble(), hive.longitude.toDouble()))
 
 
 
                     }
                     for (hive in hives_Searched){
-                        hiveList_names_searched.add("ID:${hive.id} "+hive.name)
+                        hiveList_names_searched.add(hive.name)
                         hiveList_searched.add(Hive("${hive.name}", hive.id, hive.latitude.toDouble(), hive.longitude.toDouble()))
                     }
 
@@ -143,7 +143,7 @@ class Hives : Activity() {
                                             id = hive.getInt("ID")
                                             Toast.makeText(this, "Hive added to saved list", Toast.LENGTH_LONG).show()
 
-                                            hiveList_names.add("ID:$id "+hivename.text.toString())
+                                            hiveList_names.add(hivename.text.toString())
                                             hiveList.add(Hive(hivename.text.toString(), id, latitude_glob, longitude_glob))
 
                                             adapter.notifyDataSetChanged()
@@ -167,7 +167,7 @@ class Hives : Activity() {
                         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
                         builder
                             .setTitle("Confirm")
-                            .setMessage("Do you want to mark this hive to be searched for or remove it?")
+                            .setMessage("Do you want to add search area for this hive or remove it?")
                             .setPositiveButton("Search Hive") { dialog, which ->
                                 //  api call to add hive to be searched for
                                 StartActivity.api.PutRequest("hive/save/search?id=${hiveList[position].id}",
@@ -175,8 +175,8 @@ class Hives : Activity() {
                                     fun(response: String) {
                                         runOnUiThread {
                                             kotlin.run {
-                                                Log.d(ContentValues.TAG, "Search for hive ${hiveList[position].name}, ${hiveList[position].id}")
-                                                Toast.makeText(this, "Hive added to search list", Toast.LENGTH_LONG).show()
+                                                Log.d(ContentValues.TAG, "Search for ${hiveList[position].name}, ${hiveList[position].id}")
+                                                Toast.makeText(this, "Searching for ${hiveList[position].name}", Toast.LENGTH_LONG).show()
                                                 val intent = Intent(this, Hives::class.java)
                                                 startActivity(intent)
                                             }
@@ -199,7 +199,7 @@ class Hives : Activity() {
                                         runOnUiThread {
                                             kotlin.run {
                                                 Log.d(ContentValues.TAG, "Deleted from saved ${hiveList[position].name}, ${hiveList[position].id}")
-                                                Toast.makeText(this, "Hive added to search list", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(this, "Deleted ${hiveList[position].name}", Toast.LENGTH_LONG).show()
                                                 val intent = Intent(this, Hives::class.java)
                                                 startActivity(intent)
                                             }
@@ -242,7 +242,7 @@ class Hives : Activity() {
                                         runOnUiThread {
                                             kotlin.run {
                                                 Log.d(ContentValues.TAG, "Stop Search for hive ${hiveList_searched[position].name}, ${hiveList_searched[position].id}")
-                                                Toast.makeText(this, "Deleted hive from search list", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(this, "Stop Search for ${hiveList_searched[position].name}", Toast.LENGTH_LONG).show()
                                                 val intent = Intent(this, Hives::class.java)
                                                 startActivity(intent)
                                             }
